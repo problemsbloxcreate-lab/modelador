@@ -36,6 +36,12 @@ for a in DO_JOGO:
         shutil.copy2(os.path.join(DST, "assets", "missing.png"), f)
         trocadas.append(a)
 shutil.copy2(os.path.join(AQUI, "banco-estudio.js"), os.path.join(DST, "banco-estudio.js"))
+# estatística de uso do autor (instalação nova, usuário recorrente, atualização, plugin instalado): desligada na nossa cópia
+bundle = os.path.join(DST, "dist", "bundle.js")
+bj = open(bundle, encoding="utf-8").read()
+n_est = bj.count("https://blckbn.ch/api/event/")
+bj = bj.replace("https://blckbn.ch/api/event/", "./sem-estatistica/")
+open(bundle, "w", encoding="utf-8").write(bj)
 h = open(os.path.join(DST, "index.html"), encoding="utf-8").read()
 if "banco-estudio.js" not in h:
     h = h.replace("</body>", '\t<script src="banco-estudio.js"></script>\n</body>', 1)
@@ -61,8 +67,9 @@ que guarda também o script de montagem e o plugin.
 O que foi mudado em relação ao original:
 - compilado com `npm run build-web` e copiado só o que a versão web usa;
 - estas imagens de referência que imitam o Minecraft foram trocadas pela imagem neutra missing.png do próprio Blockbench: {", ".join(trocadas) or "nenhuma"};
+- a estatística de uso que o Blockbench manda para o servidor do autor (blckbn.ch/api/event/…, {n_est} chamadas) foi desligada;
 - a página carrega o plugin `banco-estudio.js` (licença MIT), que liga o Blockbench ao banco de modelos do Estúdio Problems;
 - o título da página.
 """)
 tam = sum(os.path.getsize(os.path.join(r, f)) for r, _, fs in os.walk(DST) for f in fs)
-print(f"ok: {DST} · {tam/1048576:.1f} MB · imagens trocadas: {len(trocadas)}")
+print(f"ok: {DST} · {tam/1048576:.1f} MB · imagens trocadas: {len(trocadas)} · estatística desligada: {n_est}")

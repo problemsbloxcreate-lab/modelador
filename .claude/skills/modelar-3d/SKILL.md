@@ -416,3 +416,11 @@ Quando alguém pede, o Worker de sons guarda o pedido (`mp:<id>`) e as imagens (
 | script-fonte que refaz o modelo | `modelador-fontes/<id>.py` |
 
 Durante o trabalho, o robô escreve uma linha curta em `/tmp/modelo/etapa.txt` a cada passo (a equipe vê na aba Pedidos) e, no fim, `/tmp/modelo/resultado.json` com `status`, `modelo` e `resposta`. Pedido com `base` é AJUSTE: muda o modelo existente, mantendo o id.
+
+## Blockbench dentro do Modelador
+
+A aba Modelador tem uma cópia do Blockbench (versão web, GPL-3.0) em `<site>/modelador/blockbench/`, montada pela Action `blockbench.yml` deste repositório (`blockbench/montar.py`: só o que a versão web usa, sem as imagens de referência que imitam o jogo, sem a estatística de uso do autor, com o plugin `blockbench/banco-estudio.js`). O plugin põe o menu **🧊 Banco do Estúdio** (Abrir do banco…, Salvar no banco) e abre direto um modelo com `?banco=<id>`.
+
+"Salvar no banco" manda o .bbmodel para o Worker (`PUT /modelo/salvar?id=`), que chama a Action `salvar-modelo.yml` do estúdio: converte com `bbmodel-para-estudio.py` (mantém as variações de textura que o banco já tinha), tira a folha de fotos, guarda o .bbmodel em `site/dados/modelos-export/` e publica. Não usa o Claude.
+
+Para quem modela à mão no Blockbench, valem as regras desta skill (só cubos, grupos `head`/`right_arm`/`left_arm`/`right_leg`/`left_leg` para o estúdio animar, frente para o norte, uma textura por modelo). Malhas (mesh) não entram no estúdio.
