@@ -1,0 +1,42 @@
+name: Publicar o Modelador (GitHub Pages)
+
+# Publica a aba Modelador em https://problemsbloxcreate-lab.github.io/modelador/ (site novo do Estúdio Problems, com o login
+# do Google do menu: /estudio-login.js). Monta: pagina/index.html → index.html e blockbench/app → blockbench/.
+# Os modelos NÃO vão para cá: o banco é privado e a página busca pelo servidor da equipe (senha da equipe).
+# Uma vez só: Settings → Pages → Source: GitHub Actions.
+on:
+  push:
+    branches: [main]
+    paths: ["pagina/**", "blockbench/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Montar o site
+        run: |
+          mkdir -p _site
+          cp pagina/index.html _site/index.html
+          cp -r blockbench/app _site/blockbench
+          touch _site/.nojekyll
+          du -sh _site; find _site -type f | wc -l
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deploy
+        uses: actions/deploy-pages@v4

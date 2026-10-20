@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Modelador · Estúdio Problems</title>
+<script src="/estudio-login.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Rubik:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -118,7 +119,7 @@ main{flex:1;min-height:0;display:flex}
   </nav>
   <div class="esp"></div>
   <a class="btn peq" href="blockbench/" target="_blank" rel="noopener" title="Blockbench: editor completo de modelos, texturas e animações (abre numa aba nova)">🧱 Blockbench</a>
-  <a class="btn peq" href="../inicio/" title="Voltar para o início do estúdio">← Início</a>
+  <a class="btn peq" id="voltaInicio" href="../inicio/" title="Voltar para o início">← Início</a>
 </header>
 <main>
   <!-- BANCO -->
@@ -211,19 +212,33 @@ main{flex:1;min-height:0;display:flex}
 /* ===================== dados ===================== */
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const DADOS=new URL('../dados/',location.href).href;
+/* No site novo (problemsbloxcreate-lab.github.io/modelador/) não existe a pasta dados/: o banco é PRIVADO e vem pelo servidor
+   da equipe (Worker de sons, rota /modelos/dados, senha da equipe). No site do estúdio (Cloudflare) lê direto de dados/. */
+const REMOTO=!/(^|\.)workers\.dev$/.test(location.hostname)&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+const SERVIDOR_EQUIPE='https://sons-problems.problemsbloxcreate.workers.dev';
+if(REMOTO){const v=document.getElementById('voltaInicio');if(v){v.href='/';v.title='Voltar para o menu do Estúdio Problems';}}
+let FRESCO=false;
+async function dados(p,tipo){
+  const r=REMOTO?await fetch(SERVIDOR_EQUIPE+'/modelos/dados?p='+encodeURIComponent(p)+(FRESCO?'&novo=1':''),{headers:{'x-senha':senhaEq()},cache:'no-store'}):await fetch(DADOS+p,{cache:'no-store'});
+  if(r.status===401){try{localStorage.removeItem('estudio.senhaSons');}catch(e){}pedeSenhaBanco('Senha da equipe errada. Digite de novo.');throw new Error('senha');}
+  if(!r.ok)throw new Error(r.status);return tipo==='blob'?r.blob():tipo==='texto'?r.text():r.json();}
+const senhaEq=()=>{try{return localStorage.getItem('estudio.senhaSons')||'';}catch(e){return '';}};
+function pedeSenhaBanco(msg){const box=$('#itens');box.innerHTML=`<form class="busca" id="fSenhaB" style="border:0"><p class="nota" style="margin:0">${msg||'Os modelos da equipe são privados. Digite a senha da equipe (a mesma da biblioteca de sons):'}</p><input type="password" id="senhaB" placeholder="senha da equipe" autocomplete="current-password" style="background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px"><button class="btn pri" type="submit">Abrir o banco</button></form>`;
+  $('#fSenhaB').onsubmit=e=>{e.preventDefault();const v=$('#senhaB').value.trim();if(!v)return;try{localStorage.setItem('estudio.senhaSons',v);}catch(_){}mostraSenha&&mostraSenha();carregaBanco();};}
 const PACKS={brainrots:'Brainrots',turma:'Turma',brasil:'Brasil',bebes:'Bebês',fogueiras:'Fogueiras',outros:'Outros',drplaneta:'Dr. Planeta',meowl:'Meowl',estudio:'Feitos no Modelador',livres:'Livres (licença aberta)'};
 const nomePack=p=>PACKS[p]||p;
 const B={itens:[],doc:{},sel:null,pack:'',q:''};
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 async function jget(u){const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw new Error(r.status);return r.json();}
 async function carregaBanco(){
-  try{const ix=await jget(DADOS+'modelosmeta/indice.json');B.itens=(ix.itens||[]).slice();}
-  catch(e){try{const ids=await jget(DADOS+'modelos/_lista.json');B.itens=ids.map(id=>({id,nome:id,pack:'outros'}));}catch(e2){B.itens=[];}}
+  if(REMOTO&&!senhaEq()){pedeSenhaBanco();return;}
+  try{const ix=await dados('modelosmeta/indice.json');B.itens=(ix.itens||[]).slice();}
+  catch(e){if(e.message==='senha')return;try{const ids=await dados('modelos/_lista.json');B.itens=ids.map(id=>({id,nome:id,pack:'outros'}));}catch(e2){B.itens=[];}}
   B.itens.sort((a,b)=>String(a.nome).localeCompare(String(b.nome),'pt'));
   desenhaPacks();desenhaLista();
   const h=decodeURIComponent(location.hash.replace(/^#m=/,''));if(h&&B.itens.some(x=>x.id===h))abre(h);
 }
-async function doc(id){if(B.doc[id])return B.doc[id];const d=await jget(DADOS+'modelos/'+encodeURIComponent(id)+'.json');d.modeloObj=typeof d.modelo==='string'?JSON.parse(d.modelo):d.modelo;d.id=d.id||id;B.doc[id]=d;return d;}
+async function doc(id){if(B.doc[id])return B.doc[id];const d=await dados('modelos/'+id+'.json');d.modeloObj=typeof d.modelo==='string'?JSON.parse(d.modelo):d.modelo;d.id=d.id||id;B.doc[id]=d;return d;}
 function desenhaPacks(){const cont={};B.itens.forEach(x=>cont[x.pack||'outros']=(cont[x.pack||'outros']||0)+1);
   const ps=Object.keys(cont).sort((a,b)=>cont[b]-cont[a]);
   $('#packs').innerHTML=`<button class="chip" data-p="" aria-pressed="${!B.pack}">Todos ${B.itens.length}</button>`+ps.map(p=>`<button class="chip" data-p="${esc(p)}" aria-pressed="${B.pack===p}">${esc(nomePack(p))} ${cont[p]}</button>`).join('');
@@ -320,7 +335,7 @@ async function abre(id,texNome){B.sel=id;$$('#itens .item').forEach(b=>b.setAttr
  const st=$('#selTex');if((d.tex||[]).length>1){st.hidden=false;st.innerHTML=d.tex.map(t=>`<option ${t.n===V.tex?'selected':''}>${esc(t.n)}</option>`).join('');st.onchange=()=>abre(id,st.value);}else st.hidden=true;
  if(!texNome){V.yaw=VISTAS['34'][0];V.pitch=VISTAS['34'][1];}
  enquadra();if(V.anim)V.t0=performance.now();V.sujo=true;mostraInfo(d,tex);}
-async function existe(u){try{const r=await fetch(u,{method:'HEAD',cache:'no-store'});return r.ok;}catch(e){return false;}}
+async function arquivo(p){try{return await dados(p,'blob');}catch(e){return null;}}
 async function mostraInfo(d,tex){const m=d.modeloObj,gs=Object.keys(m.groups||{}),ossos=gs.filter(k=>OSSOS[k]),tw=(m.texture||[64,64]);
  const it=B.itens.find(x=>x.id===d.id)||{};
  const box=$('#info');box.innerHTML=`<h2>${esc(d.nome||d.id)}</h2><div class="sub">${esc(nomePack(d.pack||it.pack||'outros'))} · ${tipoTxt(d)}</div>
@@ -336,13 +351,14 @@ async function mostraInfo(d,tex){const m=d.modeloObj,gs=Object.keys(m.groups||{}
   <h3>Conferência</h3><div id="folha"><p class="nota">Procurando a folha de fotos…</p></div>
   <h3>Mudar</h3><div class="baixar"><a class="btn peq pri" href="blockbench/?banco=${encodeURIComponent(d.id||it.id)}" target="_blank" rel="noopener">🧱 Editar no Blockbench</a><button class="btn peq" id="ajusta">✏️ Pedir ajuste ao robô</button></div>
   <p class="nota">No Blockbench, use o menu 🧊 Banco do Estúdio → Salvar no banco: em uns 3 minutos a versão nova aparece aqui.</p>
-  ${(d.pack==='livres')?'<p class="nota" style="margin-top:10px">Modelo de licença aberta: veja autor e obrigação de crédito em <a href="../dados/modelos/CREDITOS.md" target="_blank" rel="noopener">CREDITOS.md</a>.</p>':''}`;
+  ${(d.pack==='livres')?'<p class="nota" style="margin-top:10px">Modelo de licença aberta: veja autor e obrigação de crédito em <a href="#" id="verCreditos">CREDITOS.md</a>.</p>':''}`;
  $$('#baixar [data-b]').forEach(b=>b.onclick=()=>baixa(d,b.dataset.b));
  $('#ajusta').onclick=()=>{PED.base={id:d.id,nome:d.nome||d.id};mostraBase();$('#pNome').value=d.nome||d.id;vai('pedir');$('#pDesc').focus();};
- const id=d.id||it.id,bb=DADOS+'modelos-export/'+encodeURIComponent(id)+'.bbmodel',fo=DADOS+'modelos-fotos/'+encodeURIComponent(id)+'.png';
- if(await existe(bb)){const a=document.createElement('a');a.className='btn peq';a.href=bb;a.download=id+'.bbmodel';a.textContent='🧱 Para o Blockbench (.bbmodel)';$('#baixar').appendChild(a);}
+ const vc=$('#verCreditos');if(vc)vc.onclick=async e=>{e.preventDefault();const b=await arquivo('modelos/CREDITOS.md');if(b)window.open(URL.createObjectURL(new Blob([await b.text()],{type:'text/plain;charset=utf-8'})),'_blank');};
+ const id=d.id||it.id,bbB=await arquivo('modelos-export/'+id+'.bbmodel'),foB=await arquivo('modelos-fotos/'+id+'.png');if(B.sel!==id)return;
+ if(bbB){const a=document.createElement('a');a.className='btn peq';a.href=URL.createObjectURL(bbB);a.download=id+'.bbmodel';a.textContent='🧱 Para o Blockbench (.bbmodel)';$('#baixar').appendChild(a);}
  else $('#notaBB').textContent='O arquivo do Blockbench (.bbmodel) sai junto quando o robô cria o modelo.';
- $('#folha').innerHTML=(await existe(fo))?`<a href="${fo}" target="_blank" rel="noopener"><img src="${fo}" alt="Folha de conferência" style="width:100%;border-radius:8px;border:1px solid var(--line)"></a>`:'<p class="nota">Sem folha de fotos (modelo antigo). Os modelos novos do robô vêm com fotos de 8 ângulos.</p>';
+ const fo=foB&&URL.createObjectURL(foB);$('#folha').innerHTML=fo?`<a href="${fo}" target="_blank" rel="noopener"><img src="${fo}" alt="Folha de conferência" style="width:100%;border-radius:8px;border:1px solid var(--line)"></a>`:'<p class="nota">Sem folha de fotos (modelo antigo). Os modelos novos do robô vêm com fotos de 8 ângulos.</p>';
  $('#tInfo').hidden=false;}
 $('#tInfo').onclick=()=>$('#info').classList.toggle('aberta');
 function salva(nome,blob){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nome;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000);}
@@ -368,9 +384,9 @@ async function miniPassa(){if(MINI.ocupado)return;MINI.ocupado=true;
 /* ===================== pedidos (Worker da equipe: o mesmo da biblioteca de sons e dos "Pedidos para o Claude") ===================== */
 const EQ={url:''};
 const senha=()=>{try{return localStorage.getItem('estudio.senhaSons')||'';}catch(e){return '';}};
-async function eqInit(){try{const j=await jget(DADOS+'sons-url.json');EQ.url=String(j.url||'').replace(/\/$/,'');}catch(e){}mostraSenha();}
+async function eqInit(){if(REMOTO)EQ.url=SERVIDOR_EQUIPE;else{try{const j=await jget(DADOS+'sons-url.json');EQ.url=String(j.url||'').replace(/\/$/,'');}catch(e){}}mostraSenha();}
 function mostraSenha(){$('#boxSenha').hidden=!!senha();}
-$('#okSenha').onclick=()=>{const v=$('#senha').value.trim();if(!v)return;try{localStorage.setItem('estudio.senhaSons',v);}catch(e){}$('#senha').value='';mostraSenha();carregaPedidos();};
+$('#okSenha').onclick=()=>{const v=$('#senha').value.trim();if(!v)return;try{localStorage.setItem('estudio.senhaSons',v);}catch(e){}$('#senha').value='';mostraSenha();carregaPedidos();if(!B.itens.length)carregaBanco();};
 async function eq(caminho,op){op=op||{};op.headers=Object.assign({'x-senha':senha()},op.headers||{});const r=await fetch(EQ.url+caminho,op);
  if(r.status===401){try{localStorage.removeItem('estudio.senhaSons');}catch(e){}mostraSenha();throw new Error('Senha da equipe errada. Digite de novo.');}
  if(!r.ok){let m='';try{m=(await r.json()).erro||'';}catch(e){}throw new Error(m||('O servidor da equipe respondeu '+r.status));}return r.json();}
@@ -416,7 +432,7 @@ async function carregaPedidos(){const box=$('#listaPed');clearTimeout(PED.timer)
    <div class="acoes">${p.modelo?`<button class="btn peq" data-ver="${esc(p.modelo)}">🧊 Ver no banco</button>`:''}${p.run?`<a class="btn peq" href="${esc(p.run)}" target="_blank" rel="noopener">Ver o robô trabalhando</a>`:''}</div></article>`).join(''):'<p class="nota">Nenhum pedido ainda.</p>';
  $$('[data-ver]').forEach(b=>b.onclick=async()=>{await recarregaBanco();vai('banco');abre(b.dataset.ver);});
  if(andando)PED.timer=setTimeout(()=>{if(!$('[data-v="pedidos"].vista').hidden)carregaPedidos();},20000);}
-async function recarregaBanco(){B.doc={};Object.keys(MINI.feito).forEach(k=>delete MINI.feito[k]);await carregaBanco();}
+async function recarregaBanco(){FRESCO=true;B.doc={};Object.keys(MINI.feito).forEach(k=>delete MINI.feito[k]);await carregaBanco();}
 $('#atuPed').onclick=carregaPedidos;
 
 /* ===================== abas ===================== */

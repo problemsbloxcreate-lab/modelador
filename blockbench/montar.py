@@ -45,6 +45,8 @@ open(bundle, "w", encoding="utf-8").write(bj)
 h = open(os.path.join(DST, "index.html"), encoding="utf-8").read()
 if "banco-estudio.js" not in h:
     h = h.replace("</body>", '\t<script src="banco-estudio.js"></script>\n</body>', 1)
+    # porteiro do login com Google do site novo (problemsbloxcreate-lab.github.io); no site antigo do estúdio o arquivo não existe
+    h = h.replace("<head>", '<head>\n\t<script src="/estudio-login.js"></script>', 1)
     h = h.replace("<title>Blockbench</title>", "<title>Blockbench · Modelador do Estúdio Problems</title>", 1)
 open(os.path.join(DST, "index.html"), "w", encoding="utf-8").write(h)
 try:

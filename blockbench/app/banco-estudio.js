@@ -11,6 +11,22 @@
 (function () {
 	'use strict';
 	const DADOS = new URL('../../dados/', location.href).href;
+	/* site novo (github.io): banco PRIVADO pelo servidor da equipe (rota /modelos/dados, senha da equipe); site do estúdio: pasta dados/ */
+	const REMOTO = !/(^|\.)workers\.dev$/.test(location.hostname) && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+	const SERVIDOR_EQUIPE = 'https://sons-problems.problemsbloxcreate.workers.dev';
+	async function dados(p, tipo) {
+		if (REMOTO && !senha()) await pedeSenha();
+		const r = REMOTO ? await fetch(SERVIDOR_EQUIPE + '/modelos/dados?p=' + encodeURIComponent(p), { headers: { 'x-senha': senha() }, cache: 'no-store' }) : await fetch(DADOS + p, { cache: 'no-store' });
+		if (r.status === 401) { try { localStorage.removeItem('estudio.senhaSons'); } catch (e) { } throw new Error('senha da equipe errada'); }
+		if (!r.ok) throw new Error('não achei (' + r.status + ')');
+		return tipo === 'texto' ? r.text() : r.json();
+	}
+	function pedeSenha() {
+		return new Promise(ok => {
+			new Dialog({ id: 'banco_estudio_senha', title: 'Senha da equipe', width: 380, form: { s: { label: 'Senha da equipe (a mesma da biblioteca de sons)', type: 'password', value: '' } },
+				onConfirm(r) { try { localStorage.setItem('estudio.senhaSons', String(r.s || '').trim()); } catch (e) { } ok(); }, onCancel() { ok(); } }).show();
+		});
+	}
 	const senha = () => { try { return localStorage.getItem('estudio.senhaSons') || ''; } catch (e) { return ''; } };
 	let URLW = '', INDICE = null;
 	const msg = (t, ms) => { try { Blockbench.showQuickMessage(t, ms || 2500); } catch (e) { console.log(t); } };
@@ -19,19 +35,20 @@
 
 	async function urlEquipe() {
 		if (URLW) return URLW;
+		if (REMOTO) return (URLW = SERVIDOR_EQUIPE);
 		try { const r = await fetch(DADOS + 'sons-url.json', { cache: 'no-store' }); if (r.ok) URLW = String((await r.json()).url || '').replace(/\/$/, ''); } catch (e) { }
 		return URLW;
 	}
 	async function indice() {
 		if (INDICE) return INDICE;
-		try { const r = await fetch(DADOS + 'modelosmeta/indice.json', { cache: 'no-store' }); INDICE = r.ok ? ((await r.json()).itens || []) : []; } catch (e) { INDICE = []; }
+		try { INDICE = (await dados('modelosmeta/indice.json')).itens || []; } catch (e) { INDICE = []; }
 		return INDICE;
 	}
 
 	async function abrirDoBanco(id) {
-		const r = await fetch(DADOS + 'modelos-export/' + encodeURIComponent(id) + '.bbmodel', { cache: 'no-store' });
-		if (!r.ok) { caixa('Banco do Estúdio', 'Não achei o arquivo do Blockbench do modelo "' + id + '". Modelos novos do robô já vêm com ele.'); return; }
-		const txt = await r.text();
+		let txt;
+		try { txt = await dados('modelos-export/' + id + '.bbmodel', 'texto'); }
+		catch (e) { caixa('Banco do Estúdio', 'Não consegui abrir o modelo "' + id + '": ' + e.message + '.'); return; }
 		loadModelFile({ path: id + '.bbmodel', name: id + '.bbmodel', content: txt });
 		const it = (await indice()).find(x => x.id === id) || {};
 		setTimeout(() => {
@@ -100,7 +117,7 @@
 	function instala() {
 		const abrir = new Action('banco_estudio_abrir', { name: 'Abrir do banco…', icon: 'folder_open', click: dialogoAbrir });
 		const salvar = new Action('banco_estudio_salvar', { name: 'Salvar no banco', icon: 'cloud_upload', click: salvarNoBanco, condition: () => !!window.Project });
-		const voltar = new Action('banco_estudio_voltar', { name: 'Voltar ao Modelador', icon: 'arrow_back', click: () => { location.href = '../'; } });
+		const voltar = new Action('banco_estudio_voltar', { name: 'Voltar ao Modelador', icon: 'arrow_back', click: () => { location.href = new URL('../', location.href).href; } });
 		const menu = new BarMenu('banco_estudio', [abrir, salvar, '_', voltar], { name: '🧊 Banco do Estúdio' });
 		MenuBar.addMenu(menu, 'file');
 		const id = Blockbench.queries && Blockbench.queries.banco;
