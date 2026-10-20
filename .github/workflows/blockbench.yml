@@ -1,0 +1,50 @@
+name: Montar o Blockbench do Modelador
+
+# Compila o Blockbench (GPL-3.0, github.com/JannisX11/blockbench) na versão web e guarda em blockbench/app/,
+# com o plugin "Banco do Estúdio" e sem as imagens que imitam o jogo (blockbench/montar.py explica).
+# Rode à mão quando quiser atualizar a versão do Blockbench.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "versão do Blockbench (branch, tag ou commit). gh-pages = a mesma do blockbench.net"
+        default: "gh-pages"
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: blockbench
+  cancel-in-progress: false
+
+jobs:
+  montar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Baixar e compilar o Blockbench
+        env:
+          REF: ${{ inputs.ref }}
+          ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+        run: |
+          git clone https://github.com/JannisX11/blockbench /tmp/bb
+          git -C /tmp/bb checkout "$REF"
+          cd /tmp/bb
+          npm ci --ignore-scripts --no-audit --no-fund || npm install --ignore-scripts --no-audit --no-fund
+          npm run build-web
+          ls -la dist | head
+      - name: Montar a pasta blockbench/app
+        run: python3 blockbench/montar.py /tmp/bb blockbench/app
+      - name: Guardar
+        run: |
+          git config user.name "Modelador (robô)"
+          git config user.email "noreply@anthropic.com"
+          git add -A blockbench/app
+          if git diff --cached --quiet; then echo "nada mudou"; exit 0; fi
+          git commit -q -m "Blockbench web montado ($(cd /tmp/bb && git rev-parse --short HEAD)) com o plugin Banco do Estúdio"
+          for i in 1 2 3; do git pull -q --rebase origin main && git push -q origin HEAD:main && break; sleep 5; done
