@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Modelador · Estúdio Problems</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Rubik:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* Modelador (repo problemsbloxcreate-lab/modelador → publicado em site/modelador/ do Estúdio Problems).
+   Mesmo visual do estúdio (tema escuro, Rubik, azul de destaque). */
+:root{--bg:#141518;--panel:#1c1d21;--panel-2:#23252b;--panel-3:#2b2e35;--line:#33363e;--text:#e9ebef;--muted:#9aa0ab;--accent:#3d9bff;--ok:#7bd88f;--warn:#ffcf4a;--err:#ff6b6b;--problems:#19f0f0;
+ --f-body:"Rubik",system-ui,-apple-system,"Segoe UI",sans-serif;--f-head:"Lilita One","Rubik",system-ui,sans-serif;--f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--text);font:14px/1.45 var(--f-body);display:flex;flex-direction:column;min-height:100vh}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--accent)}
+[hidden]{display:none!important}
+.top{display:flex;align-items:center;gap:14px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px;min-width:0}
+.logo b{font:22px/1 var(--f-head);letter-spacing:.3px}
+.logo small{color:var(--muted);font-size:12px;display:block;margin-top:2px}
+.cubo{width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,#5fe7ff 0 50%,#19b8cf 50% 100%);box-shadow:inset 0 -6px 0 rgba(0,0,0,.25);flex:none}
+.abas{display:flex;gap:4px;flex-wrap:wrap}
+.abas button{border:1px solid var(--line);background:none;color:var(--muted);border-radius:999px;padding:5px 13px;font-weight:600;cursor:pointer}
+.abas button:hover{color:var(--text)}
+.abas button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.top .esp{flex:1}
+.btn{border:1px solid var(--line);background:var(--panel-2);border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:600;text-decoration:none;color:var(--text);display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{border-color:#4a4f5a}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.peq{padding:4px 9px;font-size:12.5px}
+.btn[aria-pressed="true"]{background:var(--panel-3);border-color:var(--accent);color:#fff}
+.btn:disabled{opacity:.5;cursor:default}
+main{flex:1;min-height:0;display:flex}
+.vista{flex:1;min-height:0;display:flex}
+/* ---- banco ---- */
+.lista{width:300px;flex:none;border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;background:var(--panel)}
+.lista .busca{padding:10px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--line)}
+.lista input[type=search]{width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.chips{display:flex;gap:4px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:none;border-radius:999px;padding:2px 9px;font-size:12px;color:var(--muted);cursor:pointer}
+.chip[aria-pressed="true"]{border-color:var(--accent);color:#fff;background:rgba(61,155,255,.18)}
+.itens{overflow:auto;flex:1;padding:6px}
+.item{display:flex;gap:10px;align-items:center;width:100%;text-align:left;border:1px solid transparent;background:none;border-radius:9px;padding:6px;cursor:pointer}
+.item:hover{background:var(--panel-2)}
+.item[aria-current="true"]{background:var(--panel-3);border-color:var(--line)}
+.item canvas,.item .mini{width:52px;height:52px;border-radius:7px;background:var(--panel-2);flex:none;image-rendering:auto}
+.item .t{min-width:0}
+.item .t b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .t span{font-size:12px;color:var(--muted)}
+.palco{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
+.barra{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:8px 10px;border-bottom:1px solid var(--line)}
+.barra .sep{width:1px;height:20px;background:var(--line);margin:0 2px}
+.cena3d{flex:1;min-height:280px;position:relative;background:radial-gradient(ellipse at 50% 30%,#2a3140,#15171b 70%)}
+.cena3d canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+.cena3d canvas:active{cursor:grabbing}
+.dica{position:absolute;left:10px;bottom:8px;font-size:11.5px;color:var(--muted);pointer-events:none}
+.vazio{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);text-align:center;padding:20px}
+.info{width:300px;flex:none;border-left:1px solid var(--line);overflow:auto;padding:14px;background:var(--panel)}
+.info h2{font:22px/1.1 var(--f-head);margin:0 0 4px}
+.info .sub{color:var(--muted);font-size:12.5px;margin-bottom:12px}
+.info h3{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:16px 0 6px;font-weight:700}
+.info dl{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;margin:0;font-size:13px}
+.info dt{color:var(--muted)}
+.info dd{margin:0;font-family:var(--f-mono);font-size:12px;overflow-wrap:anywhere}
+.tex{background:repeating-conic-gradient(#2b2e35 0 25%,#202227 0 50%) 0 0/12px 12px;border:1px solid var(--line);border-radius:8px;padding:6px;display:flex;justify-content:center}
+.tex img{image-rendering:pixelated;max-width:100%;width:256px}
+.baixar{display:flex;flex-direction:column;gap:6px}
+.baixar .btn{justify-content:flex-start}
+.nota{font-size:12px;color:var(--muted)}
+/* ---- pedir ---- */
+.form{max-width:760px;margin:0 auto;padding:22px 18px 40px;width:100%;overflow:auto}
+.form h2{font:26px/1.1 var(--f-head);margin:0 0 6px}
+.form p.lead{color:var(--muted);margin:0 0 18px}
+.campo{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.campo label{font-weight:600}
+.campo small{color:var(--muted);font-size:12px}
+.campo input[type=text],.campo textarea,.campo select,.senha input{background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:9px 11px;width:100%}
+.campo textarea{min-height:130px;resize:vertical}
+.tipos{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.tipo{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--panel-2);cursor:pointer;text-align:left}
+.tipo b{display:block}
+.tipo span{font-size:12px;color:var(--muted)}
+.tipo[aria-pressed="true"]{border-color:var(--accent);background:rgba(61,155,255,.14)}
+.refs{border:1.5px dashed var(--line);border-radius:10px;padding:14px;text-align:center;color:var(--muted);cursor:pointer}
+.refs.sobre{border-color:var(--accent);color:var(--text)}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.thumbs figure{margin:0;position:relative}
+.thumbs img{width:86px;height:86px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.thumbs button{position:absolute;top:-6px;right:-6px;border:0;border-radius:50%;width:22px;height:22px;background:var(--err);color:#fff;cursor:pointer;line-height:22px;padding:0}
+.senha{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:16px}
+.senha input{width:auto;flex:1;min-width:160px}
+.msg{margin-top:10px;font-size:13px}
+.msg.ok{color:var(--ok)}.msg.err{color:var(--err)}
+/* ---- pedidos ---- */
+.peds{max-width:820px;margin:0 auto;padding:22px 18px 40px;width:100%;overflow:auto}
+.ped{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--panel);margin-bottom:10px}
+.ped .cab{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.ped .cab b{font-size:15px}
+.st{font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 9px;text-transform:uppercase;letter-spacing:.4px}
+.st.aberto{background:#33363e;color:#d6d9df}.st.fazendo{background:rgba(255,207,74,.18);color:var(--warn)}.st.feito{background:rgba(123,216,143,.16);color:var(--ok)}.st.erro{background:rgba(255,107,107,.16);color:var(--err)}
+.ped .desc{color:var(--muted);font-size:13px;margin:6px 0 0;white-space:pre-wrap}
+.ped .resp{margin-top:8px;font-size:13px;white-space:pre-wrap}
+.ped .acoes{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+@media (max-width:980px){.info{display:none}.info.aberta{display:block;position:fixed;inset:auto 0 0 0;max-height:55vh;border-left:0;border-top:1px solid var(--line);z-index:5}}
+@media (max-width:720px){.vista.banco{flex-direction:column}.lista{width:auto;max-height:38vh;border-right:0;border-bottom:1px solid var(--line)}.top{gap:8px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="logo"><div class="cubo" aria-hidden="true"></div><div><b>Modelador</b><small>Estúdio Problems · modelos 3D no estilo Minecraft</small></div></div>
+  <nav class="abas" role="tablist" aria-label="Áreas do Modelador">
+    <button role="tab" data-v="banco" aria-selected="true">🧊 Banco</button>
+    <button role="tab" data-v="pedir" aria-selected="false">✏️ Pedir modelo</button>
+    <button role="tab" data-v="pedidos" aria-selected="false">📋 Pedidos <span id="nPed"></span></button>
+  </nav>
+  <div class="esp"></div>
+  <a class="btn peq" href="../" title="Voltar para o estúdio de cenas">← Estúdio</a>
+</header>
+<main>
+  <!-- BANCO -->
+  <section class="vista banco" data-v="banco">
+    <aside class="lista">
+      <div class="busca">
+        <input type="search" id="q" placeholder="Procurar modelo…" aria-label="Procurar modelo">
+        <div class="chips" id="packs"></div>
+      </div>
+      <div class="itens" id="itens"><p class="nota" style="padding:10px">Carregando o banco…</p></div>
+    </aside>
+    <div class="palco">
+      <div class="barra">
+        <button class="btn peq" data-cam="34">3/4</button>
+        <button class="btn peq" data-cam="frente">Frente</button>
+        <button class="btn peq" data-cam="lado">Lado</button>
+        <button class="btn peq" data-cam="costas">Costas</button>
+        <button class="btn peq" data-cam="cima">Cima</button>
+        <span class="sep"></span>
+        <button class="btn peq" id="tGrade" aria-pressed="true" title="Chão em blocos de 16 px">Grade</button>
+        <button class="btn peq" id="tEscala" aria-pressed="false" title="Jogador de 2 blocos ao lado, para comparar o tamanho">Escala</button>
+        <button class="btn peq" id="tAnim" aria-pressed="false" title="Testa as partes que mexem (cabeça, braços, pernas)">Animar</button>
+        <button class="btn peq" id="tGira" aria-pressed="false" title="Fica girando">Girar</button>
+        <select id="selTex" class="btn peq" aria-label="Textura" hidden></select>
+        <span class="esp" style="flex:1"></span>
+        <button class="btn peq" id="tInfo" hidden>Detalhes</button>
+      </div>
+      <div class="cena3d" id="cena3d">
+        <canvas id="gl"></canvas>
+        <div class="vazio" id="vazio">Escolha um modelo na lista.</div>
+        <div class="dica">Arraste para girar · roda do mouse aproxima · botão direito (ou Shift) move</div>
+      </div>
+    </div>
+    <aside class="info" id="info"><p class="nota">Nenhum modelo aberto.</p></aside>
+  </section>
+
+  <!-- PEDIR -->
+  <section class="vista" data-v="pedir" hidden>
+    <form class="form" id="fPed" autocomplete="off">
+      <h2>Pedir um modelo novo</h2>
+      <p class="lead">Descreva o que você quer e mande uma imagem de referência. O robô (Claude) cria o modelo no estilo do Minecraft, confere por fotos de vários ângulos e coloca no banco. Leva uns minutos e usa o limite do Claude da equipe.</p>
+      <div class="senha" id="boxSenha" hidden>
+        <span>🔒 Senha da equipe (a mesma da biblioteca de sons):</span>
+        <input type="password" id="senha" placeholder="senha da equipe" autocomplete="current-password">
+        <button type="button" class="btn peq" id="okSenha">Entrar</button>
+      </div>
+      <div class="campo" id="campoBase" hidden>
+        <label>Ajuste de um modelo do banco</label>
+        <div class="nota" id="txtBase"></div>
+        <button type="button" class="btn peq" id="tirarBase" style="align-self:flex-start">Não, é um modelo novo</button>
+      </div>
+      <div class="campo"><label for="pNome">Nome do modelo</label><input type="text" id="pNome" maxlength="60" required placeholder="Ex.: Trono do Kadu, Golem de lava, Skate do Problems"></div>
+      <div class="campo"><label>O que é</label>
+        <div class="tipos" id="tipos">
+          <button type="button" class="tipo" data-t="personagem" aria-pressed="true"><b>🧍 Personagem</b><span>Tem cabeça, braços e pernas; o estúdio anima.</span></button>
+          <button type="button" class="tipo" data-t="objeto" aria-pressed="false"><b>🪑 Objeto / cenário</b><span>Fica no chão ou no mundo (trono, máquina, baú).</span></button>
+          <button type="button" class="tipo" data-t="mao" aria-pressed="false"><b>✋ Item de mão</b><span>Segurado pelo personagem (arma, livro, ferramenta).</span></button>
+          <button type="button" class="tipo" data-t="bloco" aria-pressed="false"><b>🟫 Bloco</b><span>Um bloco de 16×16×16 com textura nova.</span></button>
+        </div>
+      </div>
+      <div class="campo"><label for="pDesc">Descrição</label>
+        <textarea id="pDesc" maxlength="1800" required placeholder="Forma, cores, tamanho (em blocos), partes que mexem, detalhes importantes, para que vídeo é…"></textarea>
+        <small>Quanto mais claro, melhor: tamanho em blocos, cores principais, o que tem que dar para reconhecer de longe.</small></div>
+      <div class="campo"><label>Imagens de referência (até 3)</label>
+        <div class="refs" id="refs" tabindex="0" role="button">Arraste imagens aqui ou clique para escolher<input type="file" id="refIn" accept="image/*" multiple hidden></div>
+        <div class="thumbs" id="thumbs"></div></div>
+      <div class="campo"><label for="pPack">Pack (pasta do banco)</label>
+        <select id="pPack"></select></div>
+      <div class="campo"><label for="pPor">Quem está pedindo</label><input type="text" id="pPor" maxlength="40" placeholder="Seu nome"></div>
+      <button class="btn pri" id="enviar" type="submit">🤖 Pedir ao robô</button>
+      <div class="msg" id="msgPed" role="status"></div>
+    </form>
+  </section>
+
+  <!-- PEDIDOS -->
+  <section class="vista" data-v="pedidos" hidden>
+    <div class="peds">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+        <h2 style="font:26px/1.1 var(--f-head);margin:0;flex:1">Pedidos de modelos</h2>
+        <button class="btn peq" id="atuPed">Atualizar</button>
+      </div>
+      <div id="listaPed"><p class="nota">Carregando…</p></div>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+"use strict";
+/* ===================== dados ===================== */
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const DADOS=new URL('../dados/',location.href).href;
+const PACKS={brainrots:'Brainrots',turma:'Turma',brasil:'Brasil',bebes:'Bebês',fogueiras:'Fogueiras',outros:'Outros',drplaneta:'Dr. Planeta',meowl:'Meowl',estudio:'Feitos no Modelador',livres:'Livres (licença aberta)'};
+const nomePack=p=>PACKS[p]||p;
+const B={itens:[],doc:{},sel:null,pack:'',q:''};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function jget(u){const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw new Error(r.status);return r.json();}
+async function carregaBanco(){
+  try{const ix=await jget(DADOS+'modelosmeta/indice.json');B.itens=(ix.itens||[]).slice();}
+  catch(e){try{const ids=await jget(DADOS+'modelos/_lista.json');B.itens=ids.map(id=>({id,nome:id,pack:'outros'}));}catch(e2){B.itens=[];}}
+  B.itens.sort((a,b)=>String(a.nome).localeCompare(String(b.nome),'pt'));
+  desenhaPacks();desenhaLista();
+  const h=decodeURIComponent(location.hash.replace(/^#m=/,''));if(h&&B.itens.some(x=>x.id===h))abre(h);
+}
+async function doc(id){if(B.doc[id])return B.doc[id];const d=await jget(DADOS+'modelos/'+encodeURIComponent(id)+'.json');d.modeloObj=typeof d.modelo==='string'?JSON.parse(d.modelo):d.modelo;d.id=d.id||id;B.doc[id]=d;return d;}
+function desenhaPacks(){const cont={};B.itens.forEach(x=>cont[x.pack||'outros']=(cont[x.pack||'outros']||0)+1);
+  const ps=Object.keys(cont).sort((a,b)=>cont[b]-cont[a]);
+  $('#packs').innerHTML=`<button class="chip" data-p="" aria-pressed="${!B.pack}">Todos ${B.itens.length}</button>`+ps.map(p=>`<button class="chip" data-p="${esc(p)}" aria-pressed="${B.pack===p}">${esc(nomePack(p))} ${cont[p]}</button>`).join('');
+  $$('#packs .chip').forEach(b=>b.onclick=()=>{B.pack=b.dataset.p;desenhaPacks();desenhaLista();});
+  const sel=$('#pPack');if(sel){const atual=sel.value||'estudio';const todos=[...new Set(['estudio',...ps])];sel.innerHTML=todos.map(p=>`<option value="${esc(p)}">${esc(nomePack(p))}</option>`).join('')+'<option value="__novo">+ pack novo…</option>';sel.value=todos.includes(atual)?atual:'estudio';}}
+function filtrados(){const q=B.q.trim().toLowerCase();return B.itens.filter(x=>(!B.pack||(x.pack||'outros')===B.pack)&&(!q||(x.nome+' '+x.id+' '+(x.pack||'')).toLowerCase().includes(q)));}
+const tipoTxt=x=>x.tipo==='personagem'?'personagem':(x.uso==='mao'?'item de mão':'objeto');
+function desenhaLista(){const L=filtrados(),box=$('#itens');
+  if(!L.length){box.innerHTML='<p class="nota" style="padding:10px">Nada encontrado.</p>';return;}
+  box.innerHTML=L.map(x=>`<button class="item" data-id="${esc(x.id)}" aria-current="${B.sel===x.id}"><canvas width="104" height="104" data-mini="${esc(x.id)}"></canvas><span class="t"><b>${esc(x.nome)}</b><span>${esc(nomePack(x.pack||'outros'))} · ${tipoTxt(x)}</span></span></button>`).join('');
+  $$('#itens .item').forEach(b=>b.onclick=()=>abre(b.dataset.id));
+  $$('#itens canvas[data-mini]').forEach(c=>MINI.obs.observe(c));}
+$('#q').addEventListener('input',e=>{B.q=e.target.value;desenhaLista();});
+
+/* ===================== 3D: geometria do BBS (mesma conta do estúdio, site/index.html bbsGeo/buildBBSBody) ===================== */
+const PU=1/16;
+const BBS_F={front:[[1,1,0],[0,1,0],[1,0,0],[0,0,0],[0,0,-1]],back:[[0,1,1],[1,1,1],[0,0,1],[1,0,1],[0,0,1]],right:[[1,1,1],[1,1,0],[1,0,1],[1,0,0],[1,0,0]],
+ left:[[0,1,0],[0,1,1],[0,0,0],[0,0,1],[-1,0,0]],top:[[0,1,0],[1,1,0],[0,1,1],[1,1,1],[0,1,0]],bottom:[[0,0,1],[1,0,1],[0,0,0],[1,0,0],[0,-1,0]]};
+function bbsGeo(cubes,go,tw,th){const P=[],N=[],U=[],v3=new THREE.Vector3(),e=new THREE.Euler(),m4=new THREE.Matrix4();
+ for(const cb of cubes){const f=cb.from||[0,0,0],s=cb.size||[0,0,0],inf=cb.offset||0,o=cb.origin||[0,0,0],lo=[f[0]-inf,f[1]-inf,f[2]-inf],hi=[f[0]+s[0]+inf,f[1]+s[1]+inf,f[2]+s[2]+inf];
+  const r=cb.rotate||[0,0,0];e.set(r[0]*Math.PI/180,r[1]*Math.PI/180,r[2]*Math.PI/180,'ZYX');m4.makeRotationFromEuler(e);const rotd=!!(r[0]||r[1]||r[2]);
+  const pt=c=>{v3.set(c[0]?hi[0]:lo[0],c[1]?hi[1]:lo[1],c[2]?hi[2]:lo[2]);if(rotd){v3.x-=o[0];v3.y-=o[1];v3.z-=o[2];v3.applyMatrix4(m4);v3.x+=o[0];v3.y+=o[1];v3.z+=o[2];}return[-(v3.x-go[0])*PU,(v3.y-go[1])*PU,-(v3.z-go[2])*PU];};
+  for(const fn in BBS_F){const uv=cb.uvs&&cb.uvs[fn];if(!uv)continue;const F=BBS_F[fn],q=F.slice(0,4).map(pt);v3.set(F[4][0],F[4][1],F[4][2]);if(rotd)v3.applyMatrix4(m4);const nr=[-v3.x,v3.y,-v3.z];
+   const tc=[[uv[0]/tw,1-uv[1]/th],[uv[2]/tw,1-uv[1]/th],[uv[0]/tw,1-uv[3]/th],[uv[2]/tw,1-uv[3]/th]];
+   [0,2,1,1,2,3].forEach(i=>{P.push(...q[i]);N.push(...nr);U.push(...tc[i]);});}}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(N,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(U,2));return g;}
+/* luz de entidade do jogo (a mesma do estúdio): topo e frente claros, lados e base mais escuros */
+function entMat(tex){const m=new THREE.MeshBasicMaterial({map:tex,alphaTest:0.1,side:THREE.DoubleSide});
+ m.onBeforeCompile=sh=>{sh.vertexShader='varying float vEL;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvec3 eN=normalize(mat3(modelMatrix)*normal);vEL=min(1.0,(max(0.0,dot(vec3(0.16169,0.808452,-0.565916),eN))+max(0.0,dot(vec3(-0.16169,0.808452,0.565916),eN)))*0.6+0.4);');
+  sh.fragmentShader='varying float vEL;\n'+sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.rgb*=vEL;');};return m;}
+const TEXC={};
+function texDe(d,nome){const t=(d.tex||[]).find(x=>x.n===nome)||(d.tex||[])[0];if(!t)return Promise.resolve(null);const k=d.id+'|'+t.n;if(TEXC[k])return TEXC[k];
+ TEXC[k]=new Promise(res=>{const im=new Image();im.onload=()=>{const tx=new THREE.Texture(im);tx.magFilter=THREE.NearestFilter;tx.minFilter=THREE.NearestFilter;tx.generateMipmaps=false;tx.needsUpdate=true;tx.userData={img:im,src:im.src,n:t.n};res(tx);};im.onerror=()=>res(null);im.src='data:image/png;base64,'+t.p;});return TEXC[k];}
+function montaCorpo(model,tex){const tw=(model.texture&&model.texture[0])||64,th=(model.texture&&model.texture[1])||64,mat=entMat(tex),G=model.groups||{},node={},body=new THREE.Group();
+ for(const k in G){const p=new THREE.Group(),b=new THREE.Group();p.add(b);p.userData.b=b;node[k]=p;}
+ for(const k in G){const g=G[k],o=g.origin||[0,0,0],par=g.parent&&G[g.parent]?g.parent:null,po=par?(G[par].origin||[0,0,0]):[0,0,0],n=node[k];
+  n.position.set(-(o[0]-po[0])*PU,(o[1]-po[1])*PU,-(o[2]-po[2])*PU);
+  if(g.rotate){const r=g.rotate.map(v=>v*Math.PI/180);n.userData.b.rotation.set(-r[0],r[1],-r[2],'ZYX');n.userData.r0=n.userData.b.rotation.clone();}else n.userData.r0=new THREE.Euler(0,0,0,'ZYX');
+  (par?node[par].userData.b:body).add(n);
+  if(g.cubes&&g.cubes.length)n.userData.b.add(new THREE.Mesh(bbsGeo(g.cubes,o,tw,th),mat));}
+ return{body,node,mat};}
+function contaCubos(m){let n=0;for(const k in (m.groups||{}))n+=((m.groups[k].cubes)||[]).length;return n;}
+
+/* ===================== visualizador ===================== */
+const V={r:null,scene:null,cam:null,alvo:new THREE.Vector3(),yaw:0.65,pitch:0.32,dist:3,obj:null,grade:null,escala:null,anim:false,gira:false,t0:performance.now(),sujo:true,tex:''};
+function iniciaGL(){const cv=$('#gl');let r;try{r=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});}catch(e){$('#vazio').textContent='Este navegador não abriu o 3D (WebGL). Use o Chrome ou o Edge atualizado.';return false;}
+ r.setPixelRatio(Math.min(2,window.devicePixelRatio||1));V.r=r;V.scene=new THREE.Scene();V.cam=new THREE.PerspectiveCamera(38,1,0.01,500);
+ const ro=new ResizeObserver(()=>{const b=cv.parentElement.getBoundingClientRect();r.setSize(b.width,b.height,false);V.cam.aspect=b.width/Math.max(1,b.height);V.cam.updateProjectionMatrix();V.sujo=true;});ro.observe(cv.parentElement);
+ controles(cv);requestAnimationFrame(loop);return true;}
+function fazGrade(tam){if(V.grade){V.scene.remove(V.grade);V.grade.geometry.dispose();}const n=Math.max(4,Math.ceil(tam)+2)|0,g=new THREE.GridHelper(n,n,0x5a6170,0x353a44);g.position.y=0.001;V.grade=g;g.visible=$('#tGrade').getAttribute('aria-pressed')==='true';V.scene.add(g);}
+function fazEscala(){if(V.escala)return;const g=new THREE.Group(),m=new THREE.LineBasicMaterial({color:0xffd400,transparent:true,opacity:0.75});
+ const caixa=(w,h,d,x,y,z)=>{const e=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(w*PU,h*PU,d*PU)),m);e.position.set(x*PU,y*PU,z*PU);g.add(e);};
+ caixa(8,8,8,0,28,0);caixa(8,12,4,0,18,0);caixa(4,12,4,-6,18,0);caixa(4,12,4,6,18,0);caixa(4,12,4,-2,6,0);caixa(4,12,4,2,6,0);V.escala=g;g.visible=false;V.scene.add(g);}
+function posCam(){const c=Math.cos(V.pitch);V.cam.position.set(V.alvo.x+V.dist*Math.sin(V.yaw)*c,V.alvo.y+V.dist*Math.sin(V.pitch),V.alvo.z+V.dist*Math.cos(V.yaw)*c);V.cam.lookAt(V.alvo);}
+function enquadra(){if(!V.obj)return;const bx=new THREE.Box3().setFromObject(V.obj.body),c=bx.getCenter(new THREE.Vector3()),s=bx.getSize(new THREE.Vector3());V.alvo.copy(c);
+ const raio=Math.max(0.25,s.length()/2);V.dist=raio/Math.sin(V.cam.fov*Math.PI/360)*1.08;V.base={c:c.clone(),raio,s};
+ if(V.escala){V.escala.position.set(c.x+Math.max(s.x/2,0.3)+0.7,0,c.z);}fazGrade(Math.max(s.x,s.z)+ (V.escala&&V.escala.visible?2:0));V.sujo=true;}
+const VISTAS={'34':[0.65,0.32],frente:[0,0.08],lado:[Math.PI/2,0.08],costas:[Math.PI,0.08],cima:[0.3,1.25]};
+$$('[data-cam]').forEach(b=>b.onclick=()=>{const v=VISTAS[b.dataset.cam];V.yaw=v[0];V.pitch=v[1];if(V.base){V.alvo.copy(V.base.c);V.dist=V.base.raio/Math.sin(V.cam.fov*Math.PI/360)*1.08;}V.sujo=true;});
+function liga(id,f){const b=$(id);b.onclick=()=>{const on=b.getAttribute('aria-pressed')!=='true';b.setAttribute('aria-pressed',String(on));f(on);V.sujo=true;};}
+liga('#tGrade',on=>{if(V.grade)V.grade.visible=on;});
+liga('#tEscala',on=>{fazEscala();V.escala.visible=on;enquadra();if(on){V.alvo.x+=0.3;V.dist*=1.25;}});
+liga('#tAnim',on=>{V.anim=on;V.t0=performance.now();if(!on)poseZero();});
+liga('#tGira',on=>{V.gira=on;});
+function controles(cv){const ptr=new Map();let ult=null,pin=0;
+ cv.addEventListener('contextmenu',e=>e.preventDefault());
+ cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);ptr.set(e.pointerId,{x:e.clientX,y:e.clientY,b:e.button,sh:e.shiftKey});ult=null;if(ptr.size===2){const[a,b]=[...ptr.values()];pin=Math.hypot(a.x-b.x,a.y-b.y);}});
+ cv.addEventListener('pointermove',e=>{const p=ptr.get(e.pointerId);if(!p)return;const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;
+  if(ptr.size===2){const[a,b]=[...ptr.values()],d=Math.hypot(a.x-b.x,a.y-b.y);if(pin){V.dist=Math.max(0.15,Math.min(80,V.dist*pin/d));}pin=d;V.sujo=true;return;}
+  if(p.b===2||p.sh||e.shiftKey){const k=V.dist*0.0016,dir=new THREE.Vector3();V.cam.getWorldDirection(dir);const dir_r=new THREE.Vector3().crossVectors(dir,V.cam.up).normalize(),up=new THREE.Vector3().crossVectors(dir_r,dir).normalize();V.alvo.addScaledVector(dir_r,-dx*k).addScaledVector(up,dy*k);}
+  else{V.yaw-=dx*0.008;V.pitch=Math.max(-1.45,Math.min(1.45,V.pitch+dy*0.008));}V.sujo=true;});
+ const fim=e=>{ptr.delete(e.pointerId);pin=0;};cv.addEventListener('pointerup',fim);cv.addEventListener('pointercancel',fim);
+ cv.addEventListener('wheel',e=>{e.preventDefault();V.dist=Math.max(0.15,Math.min(80,V.dist*Math.exp(e.deltaY*0.0012)));V.sujo=true;},{passive:false});}
+/* teste de animação: as partes com os nomes do jogo (head, right_arm…) mexem como o estúdio mexe */
+const OSSOS={head:'cabeça',right_arm:'braço direito',left_arm:'braço esquerdo',right_leg:'perna direita',left_leg:'perna esquerda'};
+function poseZero(){if(!V.obj)return;for(const k in V.obj.node){const n=V.obj.node[k];n.userData.b.rotation.copy(n.userData.r0);}}
+function animar(t){const N=V.obj.node,s=Math.sin(t*5.5),r=(k,x,y,z)=>{const n=N[k];if(!n)return;const r0=n.userData.r0;n.userData.b.rotation.set(r0.x+(x||0),r0.y+(y||0),r0.z+(z||0),'ZYX');};
+ r('right_leg',0.6*s);r('left_leg',-0.6*s);r('right_arm',-0.55*s);r('left_arm',0.55*s);r('head',0.08*Math.sin(t*2.2),0.35*Math.sin(t*1.3));
+ /* partes extras (cauda, asas, antena…): balançam de leve para mostrar que giram no pivô certo */
+ let i=0;for(const k in N){if(OSSOS[k]||k==='body'||k==='all'||k==='root')continue;if(!N[k].userData.b.children.some(c=>c.isMesh))continue;r(k,0.12*Math.sin(t*3+i),0.12*Math.sin(t*2.4+i*1.7));i++;}}
+function loop(now){requestAnimationFrame(loop);if(!V.r)return;const t=(now-V.t0)/1000;
+ if(V.gira){V.yaw+=0.006;V.sujo=true;}
+ if(V.obj&&V.anim){animar(t);V.sujo=true;}
+ if(!V.sujo)return;V.sujo=false;posCam();V.r.render(V.scene,V.cam);}
+
+/* ===================== abrir um modelo ===================== */
+async function abre(id,texNome){B.sel=id;$$('#itens .item').forEach(b=>b.setAttribute('aria-current',String(b.dataset.id===id)));
+ history.replaceState(null,'','#m='+encodeURIComponent(id));$('#vazio').hidden=true;
+ let d;try{d=await doc(id);}catch(e){$('#vazio').hidden=false;$('#vazio').textContent='Não consegui abrir este modelo.';return;}
+ if(B.sel!==id)return;const tex=await texDe(d,texNome);if(B.sel!==id)return;
+ if(V.obj){V.scene.remove(V.obj.body);V.obj.body.traverse(o=>{if(o.isMesh)o.geometry.dispose();});V.obj.mat.dispose();}
+ V.obj=montaCorpo(d.modeloObj,tex);V.obj.id=id;V.scene.add(V.obj.body);V.tex=tex?tex.userData.n:'';
+ const temOsso=Object.keys(OSSOS).some(k=>V.obj.node[k]);$('#tAnim').disabled=!temOsso&&Object.keys(V.obj.node).length<2;if($('#tAnim').disabled){$('#tAnim').setAttribute('aria-pressed','false');V.anim=false;}
+ const st=$('#selTex');if((d.tex||[]).length>1){st.hidden=false;st.innerHTML=d.tex.map(t=>`<option ${t.n===V.tex?'selected':''}>${esc(t.n)}</option>`).join('');st.onchange=()=>abre(id,st.value);}else st.hidden=true;
+ if(!texNome){V.yaw=VISTAS['34'][0];V.pitch=VISTAS['34'][1];}
+ enquadra();if(V.anim)V.t0=performance.now();V.sujo=true;mostraInfo(d,tex);}
+async function existe(u){try{const r=await fetch(u,{method:'HEAD',cache:'no-store'});return r.ok;}catch(e){return false;}}
+async function mostraInfo(d,tex){const m=d.modeloObj,gs=Object.keys(m.groups||{}),ossos=gs.filter(k=>OSSOS[k]),tw=(m.texture||[64,64]);
+ const it=B.itens.find(x=>x.id===d.id)||{};
+ const box=$('#info');box.innerHTML=`<h2>${esc(d.nome||d.id)}</h2><div class="sub">${esc(nomePack(d.pack||it.pack||'outros'))} · ${tipoTxt(d)}</div>
+  <dl><dt>id</dt><dd>${esc(d.id||it.id)}</dd><dt>cubos</dt><dd>${contaCubos(m)}</dd><dt>partes</dt><dd>${gs.length}</dd><dt>textura</dt><dd>${tw[0]}×${tw[1]} px${(d.tex||[]).length>1?' · '+d.tex.length+' variações':''}</dd>
+  <dt>anima</dt><dd>${ossos.length?ossos.map(k=>OSSOS[k]).join(', '):'nenhuma parte do boneco'}</dd></dl>
+  <h3>Textura</h3><div class="tex">${tex?`<img alt="Textura ${esc(V.tex)}" src="${tex.userData.src}">`:'<span class="nota">sem textura</span>'}</div>
+  <h3>Baixar</h3><div class="baixar" id="baixar">
+   <button class="btn peq" data-b="json">📦 Modelo do estúdio (.json)</button>
+   <button class="btn peq" data-b="bbs">🎮 Para o jogo (BBS: model.bbs.json)</button>
+   <button class="btn peq" data-b="png">🖼 Textura (model.png)</button>
+  </div>
+  <p class="nota" id="notaBB"></p>
+  <h3>Conferência</h3><div id="folha"><p class="nota">Procurando a folha de fotos…</p></div>
+  <h3>Mudar</h3><button class="btn peq" id="ajusta">✏️ Pedir ajuste deste modelo</button>
+  ${(d.pack==='livres')?'<p class="nota" style="margin-top:10px">Modelo de licença aberta: veja autor e obrigação de crédito em <a href="../dados/modelos/CREDITOS.md" target="_blank" rel="noopener">CREDITOS.md</a>.</p>':''}`;
+ $$('#baixar [data-b]').forEach(b=>b.onclick=()=>baixa(d,b.dataset.b));
+ $('#ajusta').onclick=()=>{PED.base={id:d.id,nome:d.nome||d.id};mostraBase();$('#pNome').value=d.nome||d.id;vai('pedir');$('#pDesc').focus();};
+ const id=d.id||it.id,bb=DADOS+'modelos-export/'+encodeURIComponent(id)+'.bbmodel',fo=DADOS+'modelos-fotos/'+encodeURIComponent(id)+'.png';
+ if(await existe(bb)){const a=document.createElement('a');a.className='btn peq';a.href=bb;a.download=id+'.bbmodel';a.textContent='🧱 Para o Blockbench (.bbmodel)';$('#baixar').appendChild(a);}
+ else $('#notaBB').textContent='O arquivo do Blockbench (.bbmodel) sai junto quando o robô cria o modelo.';
+ $('#folha').innerHTML=(await existe(fo))?`<a href="${fo}" target="_blank" rel="noopener"><img src="${fo}" alt="Folha de conferência" style="width:100%;border-radius:8px;border:1px solid var(--line)"></a>`:'<p class="nota">Sem folha de fotos (modelo antigo). Os modelos novos do robô vêm com fotos de 8 ângulos.</p>';
+ $('#tInfo').hidden=false;}
+$('#tInfo').onclick=()=>$('#info').classList.toggle('aberta');
+function salva(nome,blob){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nome;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000);}
+function b64blob(b64,tipo){const s=atob(b64),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return new Blob([u],{type:tipo});}
+function baixa(d,qual){const id=d.id||B.sel;const t=(d.tex||[]).find(x=>x.n===V.tex)||(d.tex||[])[0];
+ if(qual==='json'){const o=Object.assign({},d);delete o.modeloObj;salva(id+'.json',new Blob([JSON.stringify(o)],{type:'application/json'}));}
+ else if(qual==='bbs')salva('model.bbs.json',new Blob([JSON.stringify(d.modeloObj,null,1)],{type:'application/json'}));
+ else if(qual==='png'&&t)salva('model.png',b64blob(t.p,'image/png'));}
+
+/* ===================== miniaturas (um renderizador só, desenha quando aparece na lista) ===================== */
+const MINI={r:null,fila:[],ocupado:false,feito:{},obs:new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){MINI.obs.unobserve(e.target);MINI.fila.push(e.target);miniPassa();}}),{root:null,rootMargin:'200px'})};
+async function miniPassa(){if(MINI.ocupado)return;MINI.ocupado=true;
+ try{while(MINI.fila.length){const cv=MINI.fila.shift(),id=cv.dataset.mini;
+  if(MINI.feito[id]){cv.getContext('2d').drawImage(MINI.feito[id],0,0);continue;}
+  try{if(!MINI.r){MINI.r=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});MINI.r.setSize(104,104,false);}
+   const d=await doc(id),tex=await texDe(d),o=montaCorpo(d.modeloObj,tex),sc=new THREE.Scene();sc.add(o.body);
+   const bx=new THREE.Box3().setFromObject(o.body),c=bx.getCenter(new THREE.Vector3()),s=bx.getSize(new THREE.Vector3()),cam=new THREE.PerspectiveCamera(32,1,0.01,200),dd=Math.max(0.2,s.length()/2)/Math.sin(16*Math.PI/180)*1.05;
+   cam.position.set(c.x+dd*0.55,c.y+dd*0.3,c.z+dd*0.78);cam.lookAt(c);MINI.r.setClearColor(0,0);MINI.r.render(sc,cam);
+   const img=document.createElement('canvas');img.width=img.height=104;img.getContext('2d').drawImage(MINI.r.domElement,0,0);MINI.feito[id]=img;
+   const ctx=cv.getContext('2d');ctx.clearRect(0,0,104,104);ctx.drawImage(img,0,0);o.body.traverse(x=>{if(x.isMesh)x.geometry.dispose();});o.mat.dispose();}catch(e){}
+  await new Promise(r=>setTimeout(r,0));}}finally{MINI.ocupado=false;}}
+
+/* ===================== pedidos (Worker da equipe: o mesmo da biblioteca de sons e dos "Pedidos para o Claude") ===================== */
+const EQ={url:''};
+const senha=()=>{try{return localStorage.getItem('estudio.senhaSons')||'';}catch(e){return '';}};
+async function eqInit(){try{const j=await jget(DADOS+'sons-url.json');EQ.url=String(j.url||'').replace(/\/$/,'');}catch(e){}mostraSenha();}
+function mostraSenha(){$('#boxSenha').hidden=!!senha();}
+$('#okSenha').onclick=()=>{const v=$('#senha').value.trim();if(!v)return;try{localStorage.setItem('estudio.senhaSons',v);}catch(e){}$('#senha').value='';mostraSenha();carregaPedidos();};
+async function eq(caminho,op){op=op||{};op.headers=Object.assign({'x-senha':senha()},op.headers||{});const r=await fetch(EQ.url+caminho,op);
+ if(r.status===401){try{localStorage.removeItem('estudio.senhaSons');}catch(e){}mostraSenha();throw new Error('Senha da equipe errada. Digite de novo.');}
+ if(!r.ok){let m='';try{m=(await r.json()).erro||'';}catch(e){}throw new Error(m||('O servidor da equipe respondeu '+r.status));}return r.json();}
+const PED={tipo:'personagem',refs:[],base:null,lista:[],timer:0};
+$$('#tipos .tipo').forEach(b=>b.onclick=()=>{PED.tipo=b.dataset.t;$$('#tipos .tipo').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));});
+function mostraBase(){$('#campoBase').hidden=!PED.base;if(PED.base)$('#txtBase').textContent='O robô vai MUDAR o modelo “'+PED.base.nome+'” ('+PED.base.id+') em vez de criar outro. Descreva o que mudar.';}
+$('#tirarBase').onclick=()=>{PED.base=null;mostraBase();};
+/* referência: reduz para no máximo 1024 px e manda como JPEG (cabe no servidor da equipe) */
+function reduz(file){return new Promise((res,rej)=>{const im=new Image();im.onload=()=>{const k=Math.min(1,1024/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+  const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.imageSmoothingEnabled=k<1;g.drawImage(im,0,0,c.width,c.height);c.toBlob(b=>b?res(b):rej(new Error('imagem')),'image/jpeg',0.88);URL.revokeObjectURL(im.src);};im.onerror=()=>rej(new Error('imagem'));im.src=URL.createObjectURL(file);});}
+async function addRefs(files){for(const f of [...files].filter(f=>/^image\//.test(f.type))){if(PED.refs.length>=3)break;try{const b=await reduz(f);PED.refs.push({blob:b,url:URL.createObjectURL(b)});}catch(e){}}desenhaRefs();}
+function desenhaRefs(){$('#thumbs').innerHTML=PED.refs.map((r,i)=>`<figure><img src="${r.url}" alt="Referência ${i+1}"><button type="button" data-i="${i}" aria-label="Tirar referência ${i+1}">×</button></figure>`).join('');
+ $$('#thumbs button').forEach(b=>b.onclick=()=>{const r=PED.refs.splice(+b.dataset.i,1)[0];if(r)URL.revokeObjectURL(r.url);desenhaRefs();});}
+{const z=$('#refs'),inp=$('#refIn');z.onclick=()=>inp.click();z.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();inp.click();}};inp.onchange=()=>{addRefs(inp.files);inp.value='';};
+ z.ondragover=e=>{e.preventDefault();z.classList.add('sobre');};z.ondragleave=()=>z.classList.remove('sobre');z.ondrop=e=>{e.preventDefault();z.classList.remove('sobre');addRefs(e.dataTransfer.files);};
+ document.addEventListener('paste',e=>{if(!$('[data-v="pedir"].vista').hidden&&e.clipboardData)addRefs([...e.clipboardData.files]);});}
+$('#pPack').addEventListener('change',e=>{if(e.target.value==='__novo'){const n=(prompt('Nome do pack novo (letras minúsculas, sem espaço):','')||'').toLowerCase().replace(/[^a-z0-9-]/g,'').slice(0,30);if(n){PACKS[n]=PACKS[n]||n;const o=document.createElement('option');o.value=n;o.textContent=n;e.target.insertBefore(o,e.target.lastElementChild);e.target.value=n;}else e.target.value='estudio';}});
+try{$('#pPor').value=localStorage.getItem('modelador.por')||'';}catch(e){}
+$('#fPed').addEventListener('submit',async e=>{e.preventDefault();const msg=$('#msgPed'),bt=$('#enviar');msg.className='msg';
+ if(!EQ.url){msg.className='msg err';msg.textContent='O servidor da equipe não está ligado neste site.';return;}
+ if(!senha()){msg.className='msg err';msg.textContent='Digite a senha da equipe primeiro.';mostraSenha();$('#senha').focus();return;}
+ const corpo={nome:$('#pNome').value.trim(),tipo:PED.tipo,descricao:$('#pDesc').value.trim(),pack:$('#pPack').value==='__novo'?'estudio':$('#pPack').value,por:$('#pPor').value.trim(),base:PED.base?PED.base.id:'',refs:PED.refs.length,status:'rascunho'};
+ if(!corpo.nome||!corpo.descricao){msg.className='msg err';msg.textContent='Preencha o nome e a descrição.';return;}
+ try{localStorage.setItem('modelador.por',corpo.por);}catch(e){}
+ bt.disabled=true;msg.textContent='Mandando o pedido…';
+ try{const r=await eq('/modelo/pedido',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(corpo)});
+  for(let i=0;i<PED.refs.length;i++){msg.textContent='Mandando a referência '+(i+1)+' de '+PED.refs.length+'…';await eq('/modelo/ref?id='+encodeURIComponent(r.id)+'&n='+i,{method:'PUT',headers:{'content-type':'image/jpeg'},body:PED.refs[i].blob});}
+  const f=await eq('/modelo/pedido?id='+encodeURIComponent(r.id),{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({status:'aberto'})});
+  msg.className='msg ok';msg.textContent=f.disparado?'Pedido enviado! O robô já começou. Acompanhe em 📋 Pedidos.':'Pedido salvo, mas não consegui chamar o robô agora ('+(f.claude||'sem resposta')+'). Ele fica na fila em 📋 Pedidos.';
+  $('#fPed').reset();PED.refs.forEach(x=>URL.revokeObjectURL(x.url));PED.refs=[];desenhaRefs();PED.base=null;mostraBase();try{$('#pPor').value=localStorage.getItem('modelador.por')||'';}catch(_){}
+  setTimeout(()=>vai('pedidos'),900);}
+ catch(err){msg.className='msg err';msg.textContent=err.message;}finally{bt.disabled=false;}});
+const quando=t=>{if(!t)return'';const d=new Date(t);return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});};
+const stTxt={rascunho:'rascunho',aberto:'na fila',fazendo:'fazendo',feito:'pronto',erro:'deu erro'};
+async function carregaPedidos(){const box=$('#listaPed');clearTimeout(PED.timer);
+ if(!EQ.url){box.innerHTML='<p class="nota">O servidor da equipe não está ligado neste site.</p>';return;}
+ if(!senha()){box.innerHTML='<p class="nota">Digite a senha da equipe na aba ✏️ Pedir modelo para ver os pedidos.</p>';return;}
+ try{const j=await eq('/modelos/pedidos');PED.lista=(j.pedidos||[]).filter(p=>p.status!=='rascunho').sort((a,b)=>(b.criadoEm||0)-(a.criadoEm||0));}
+ catch(e){box.innerHTML=`<p class="msg err">${esc(e.message)}</p>`;return;}
+ const andando=PED.lista.filter(p=>p.status==='aberto'||p.status==='fazendo').length;$('#nPed').textContent=andando?'('+andando+')':'';
+ box.innerHTML=PED.lista.length?PED.lista.map(p=>`<article class="ped"><div class="cab"><b>${esc(p.nome)}</b><span class="st ${esc(p.status)}">${esc(stTxt[p.status]||p.status)}</span><span class="nota">${esc(p.tipo==='mao'?'item de mão':p.tipo)} · ${esc(nomePack(p.pack||'estudio'))}${p.base?' · ajuste de '+esc(p.base):''} · ${esc(p.por||'')} ${quando(p.criadoEm)}</span></div>
+   <p class="desc">${esc(p.descricao)}</p>${p.etapa&&p.status==='fazendo'?`<p class="resp">⏳ ${esc(p.etapa)}</p>`:''}${p.resposta?`<p class="resp">${esc(p.resposta)}</p>`:''}
+   <div class="acoes">${p.modelo?`<button class="btn peq" data-ver="${esc(p.modelo)}">🧊 Ver no banco</button>`:''}${p.run?`<a class="btn peq" href="${esc(p.run)}" target="_blank" rel="noopener">Ver o robô trabalhando</a>`:''}</div></article>`).join(''):'<p class="nota">Nenhum pedido ainda.</p>';
+ $$('[data-ver]').forEach(b=>b.onclick=async()=>{await recarregaBanco();vai('banco');abre(b.dataset.ver);});
+ if(andando)PED.timer=setTimeout(()=>{if(!$('[data-v="pedidos"].vista').hidden)carregaPedidos();},20000);}
+async function recarregaBanco(){B.doc={};Object.keys(MINI.feito).forEach(k=>delete MINI.feito[k]);await carregaBanco();}
+$('#atuPed').onclick=carregaPedidos;
+
+/* ===================== abas ===================== */
+function vai(v){$$('.abas [data-v]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.v===v)));$$('main .vista').forEach(s=>s.hidden=s.dataset.v!==v);
+ if(v==='pedidos')carregaPedidos();if(v==='banco'){V.sujo=true;}}
+$$('.abas [data-v]').forEach(b=>b.onclick=()=>vai(b.dataset.v));
+
+/* ===================== começar ===================== */
+window.MODELADOR={abre,vai,B,V};
+if(window.THREE&&iniciaGL()){carregaBanco();}else if(!window.THREE){$('#vazio').textContent='Não consegui carregar o 3D (three.js). Confira a internet e recarregue.';}
+eqInit();
+</script>
+</body>
+</html>
