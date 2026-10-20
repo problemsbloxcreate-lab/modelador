@@ -34,6 +34,16 @@ jobs:
           cp -r blockbench/app _site/blockbench
           touch _site/.nojekyll
           du -sh _site; find _site -type f | wc -l
+      - name: Deixar o Pages publicando só por esta Action (senão o GitHub publica a pasta por cima e aparece o README)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          antes=$(gh api repos/${{ github.repository }}/pages --jq .build_type 2>/dev/null || echo '?')
+          echo "Modo do Pages antes: $antes"
+          if [ "$antes" != "workflow" ]; then
+            if gh api -X PUT repos/${{ github.repository }}/pages -f build_type=workflow >/dev/null 2>err.txt; then echo "::notice::Pages trocado para GitHub Actions (antes: $antes)";
+            else echo "::warning::Não consegui trocar o Pages sozinho ($(head -c 200 err.txt)). Troque em Settings → Pages → Source: GitHub Actions."; fi
+          else echo "::notice::Pages já publica só por esta Action"; fi
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
