@@ -48,6 +48,8 @@ if "banco-estudio.js" not in h:
     # porteiro do login com Google do site novo (problemsbloxcreate-lab.github.io); no site antigo do estúdio o arquivo não existe
     h = h.replace("<head>", '<head>\n\t<script src="/estudio-login.js"></script>', 1)
     h = h.replace("<title>Blockbench</title>", "<title>Blockbench · Modelador do Estúdio Problems</title>", 1)
+if "estudio-conta.js" not in h:
+    h = h.replace("<title>", '<!-- botão da conta do Estúdio Problems (foto, nome, Minha conta, menu, sair) no canto da barra do Blockbench -->\n\t<style>body .ep-conta.solto{top:2px;right:8px}body .ep-conta.solto .ep-conta-btn{width:26px;height:26px;font-size:12px}body .ep-conta.solto .ep-conta-pop{top:32px}a[href="https://blockbench.net/downloads"]{display:none!important}</style>\n\t<script src="/estudio-conta.js" defer></script>' + "\n\t<title>", 1)
 open(os.path.join(DST, "index.html"), "w", encoding="utf-8").write(h)
 try:
     rev = subprocess.run(["git", "-C", SRC, "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()

@@ -106,6 +106,24 @@ main{flex:1;min-height:0;display:flex}
 .ped .desc{color:var(--muted);font-size:13px;margin:6px 0 0;white-space:pre-wrap}
 .ped .resp{margin-top:8px;font-size:13px;white-space:pre-wrap}
 .ped .acoes{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+/* tela inicial (como a do Animador): atalhos + abertos recentemente */
+.vista.inicio{overflow:auto;display:block}
+.ini{max-width:1100px;margin:0 auto;padding:22px 18px 50px}
+.ini h2{font:26px/1.1 var(--f-head);margin:0 0 4px;letter-spacing:.3px}.ini .sub{color:var(--muted);margin:0 0 20px}
+.ini-acoes{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin-bottom:28px}
+.ini-acoes button,.ini-acoes a{display:flex;align-items:center;gap:14px;text-align:left;padding:16px 18px;border-radius:14px;border:1px solid var(--line);background:var(--panel);cursor:pointer;color:var(--text);text-decoration:none}
+.ini-acoes :is(button,a):hover{border-color:var(--accent);background:var(--panel-2)}
+.ini-acoes .pri{background:linear-gradient(140deg,color-mix(in srgb,var(--accent) 26%,var(--panel)),var(--panel) 70%);border-color:color-mix(in srgb,var(--accent) 50%,var(--line))}
+.ini-acoes .ic{font-size:26px;line-height:1}.ini-acoes b{display:block;font-size:15px}.ini-acoes small{color:var(--muted);font-size:12px}
+.ini-sec{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-size:12.5px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600}
+.ini-sec .esp{flex:1}.ini-sec button{text-transform:none;letter-spacing:0}
+.ini-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.ini-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;padding:0;text-align:left;transition:transform .15s,border-color .15s}
+.ini-card:hover,.ini-card:focus-visible{border-color:var(--accent);transform:translateY(-2px);outline:none}
+.ini-card canvas{display:block;width:100%;aspect-ratio:1;background:radial-gradient(circle at 50% 40%,var(--panel-3),var(--panel-2))}
+.ini-card .t{display:block;padding:8px 10px}.ini-card b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}.ini-card small{color:var(--muted);font-size:11.5px}
+.ini-vazio{padding:26px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px;grid-column:1/-1}
+.logo{cursor:pointer}
 @media (max-width:980px){.info{display:none}.info.aberta{display:block;position:fixed;inset:auto 0 0 0;max-height:55vh;border-left:0;border-top:1px solid var(--line);z-index:5}}
 @media (max-width:720px){.vista.banco{flex-direction:column}.lista{width:auto;max-height:38vh;border-right:0;border-bottom:1px solid var(--line)}.top{gap:8px}}
 </style>
@@ -114,7 +132,8 @@ main{flex:1;min-height:0;display:flex}
 <header class="top">
   <div class="logo"><div class="cubo" aria-hidden="true"></div><div><b>Modelador</b><small>Estúdio Problems · modelos 3D no estilo Minecraft</small></div></div>
   <nav class="abas" role="tablist" aria-label="Áreas do Modelador">
-    <button role="tab" data-v="banco" aria-selected="true">🧊 Banco</button>
+    <button role="tab" data-v="inicio" aria-selected="true">🏠 Início</button>
+    <button role="tab" data-v="banco" aria-selected="false">🧊 Banco</button>
     <button role="tab" data-v="pedir" aria-selected="false">✏️ Pedir modelo</button>
     <button role="tab" data-v="pedidos" aria-selected="false">📋 Pedidos <span id="nPed"></span></button>
   </nav>
@@ -124,8 +143,23 @@ main{flex:1;min-height:0;display:flex}
   <span data-estudio-conta></span>
 </header>
 <main>
+  <!-- INÍCIO -->
+  <section class="vista inicio" data-v="inicio">
+    <div class="ini">
+      <h2>Modelador</h2><p class="sub">Modelos 3D no estilo Minecraft do Estúdio Problems.</p>
+      <div class="ini-acoes">
+        <button class="pri" data-ir="banco"><span class="ic">🧊</span><span><b>Ver o banco</b><small id="iniTot">todos os modelos da equipe</small></span></button>
+        <button data-ir="pedir"><span class="ic">✏️</span><span><b>Pedir modelo</b><small>descreva e o Claude faz</small></span></button>
+        <button data-ir="pedidos"><span class="ic">📋</span><span><b>Pedidos</b><small>acompanhe o que foi pedido</small></span></button>
+        <a href="blockbench/" target="_blank" rel="noopener"><span class="ic">🧱</span><span><b>Blockbench</b><small>editor completo (aba nova)</small></span></a>
+      </div>
+      <div class="ini-sec">Abertos recentemente<span class="esp"></span><button class="btn peq" id="iniLimpa" hidden>Limpar</button></div>
+      <div class="ini-grid" id="iniRec"></div>
+    </div>
+  </section>
+
   <!-- BANCO -->
-  <section class="vista banco" data-v="banco">
+  <section class="vista banco" data-v="banco" hidden>
     <aside class="lista">
       <div class="busca">
         <input type="search" id="q" placeholder="Procurar modelo…" aria-label="Procurar modelo">
@@ -239,8 +273,8 @@ async function carregaBanco(){
   try{const ix=await dados('modelosmeta/indice.json');B.itens=(ix.itens||[]).slice();}
   catch(e){if(e.message==='senha')return;try{const ids=await dados('modelos/_lista.json');B.itens=ids.map(id=>({id,nome:id,pack:'outros'}));}catch(e2){B.itens=[];}}
   B.itens.sort((a,b)=>String(a.nome).localeCompare(String(b.nome),'pt'));
-  desenhaPacks();desenhaLista();
-  const h=decodeURIComponent(location.hash.replace(/^#m=/,''));if(h&&B.itens.some(x=>x.id===h))abre(h);
+  desenhaPacks();desenhaLista();desenhaInicio();
+  const h=decodeURIComponent(location.hash.replace(/^#m=/,''));if(h&&B.itens.some(x=>x.id===h)){vai('banco');abre(h);}
 }
 async function doc(id){if(B.doc[id])return B.doc[id];const d=await dados('modelos/'+id+'.json');d.modeloObj=typeof d.modelo==='string'?JSON.parse(d.modelo):d.modelo;d.id=d.id||id;B.doc[id]=d;return d;}
 function desenhaPacks(){const cont={};B.itens.forEach(x=>cont[x.pack||'outros']=(cont[x.pack||'outros']||0)+1);
@@ -330,7 +364,7 @@ function loop(now){requestAnimationFrame(loop);if(!V.r)return;const t=(now-V.t0)
 
 /* ===================== abrir um modelo ===================== */
 async function abre(id,texNome){B.sel=id;$$('#itens .item').forEach(b=>b.setAttribute('aria-current',String(b.dataset.id===id)));
- history.replaceState(null,'','#m='+encodeURIComponent(id));$('#vazio').hidden=true;
+ history.replaceState(null,'','#m='+encodeURIComponent(id));$('#vazio').hidden=true;guardaRecente(id);
  let d;try{d=await doc(id);}catch(e){$('#vazio').hidden=false;$('#vazio').textContent='Não consegui abrir este modelo.';return;}
  if(B.sel!==id)return;const tex=await texDe(d,texNome);if(B.sel!==id)return;
  if(V.obj){V.scene.remove(V.obj.body);V.obj.body.traverse(o=>{if(o.isMesh)o.geometry.dispose();});V.obj.mat.dispose();}
@@ -439,13 +473,30 @@ async function carregaPedidos(){const box=$('#listaPed');clearTimeout(PED.timer)
 async function recarregaBanco(){FRESCO=true;B.doc={};Object.keys(MINI.feito).forEach(k=>delete MINI.feito[k]);await carregaBanco();}
 $('#atuPed').onclick=carregaPedidos;
 
+/* ===================== tela inicial ===================== */
+const REC={k:'ep-modelador-recentes',ler(){try{return JSON.parse(localStorage.getItem(this.k))||[];}catch(_){return [];}},gravar(l){try{localStorage.setItem(this.k,JSON.stringify(l.slice(0,24)));}catch(_){}}};
+function guardaRecente(id){const x=B.itens.find(i=>i.id===id)||{id,nome:id};REC.gravar([{id,nome:x.nome,pack:x.pack||'outros',t:Date.now()},...REC.ler().filter(r=>r.id!==id)]);}
+const quandoAbriu=t=>{const d=new Date(t),h=new Date();return d.toDateString()===h.toDateString()?'hoje, '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});};
+function desenhaInicio(){const box=$('#iniRec');if(!box)return;
+ const ids=new Set(B.itens.map(i=>i.id)),L=REC.ler().filter(r=>!B.itens.length||ids.has(r.id));
+ if(B.itens.length)$('#iniTot').textContent=B.itens.length+' modelo'+(B.itens.length===1?'':'s')+' da equipe';
+ $('#iniLimpa').hidden=!L.length;
+ box.innerHTML=L.length?L.map(r=>`<button class="ini-card" data-id="${esc(r.id)}"><canvas width="104" height="104" data-mini="${esc(r.id)}"></canvas><span class="t"><b>${esc(r.nome)}</b><small>${esc(nomePack(r.pack))} · ${quandoAbriu(r.t)}</small></span></button>`).join('')
+  :'<div class="ini-vazio">Nenhum modelo aberto ainda. Os que você abrir no banco aparecem aqui.</div>';
+ $$('#iniRec .ini-card').forEach(b=>b.onclick=()=>{vai('banco');abre(b.dataset.id);});
+ if(B.itens.length)$$('#iniRec canvas[data-mini]').forEach(c=>MINI.obs.observe(c));}
+$$('[data-ir]').forEach(b=>b.onclick=()=>vai(b.dataset.ir));
+$('#iniLimpa').onclick=()=>{REC.gravar([]);desenhaInicio();};
+$('.logo').title='Voltar ao início do Modelador';$('.logo').onclick=()=>vai('inicio');
+
 /* ===================== abas ===================== */
 function vai(v){$$('.abas [data-v]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.v===v)));$$('main .vista').forEach(s=>s.hidden=s.dataset.v!==v);
- if(v==='pedidos')carregaPedidos();if(v==='banco'){V.sujo=true;}}
+ if(v==='pedidos')carregaPedidos();if(v==='banco'){V.sujo=true;}if(v==='inicio'){desenhaInicio();if(location.hash)history.replaceState(null,'',location.pathname+location.search);}}
 $$('.abas [data-v]').forEach(b=>b.onclick=()=>vai(b.dataset.v));
 
 /* ===================== começar ===================== */
 window.MODELADOR={abre,vai,B,V};
+if(/^#m=/.test(location.hash))vai('banco');else desenhaInicio(); // link direto para um modelo abre o banco; senão, a tela inicial
 if(window.THREE&&iniciaGL()){carregaBanco();}else if(!window.THREE){$('#vazio').textContent='Não consegui carregar o 3D (three.js). Confira a internet e recarregue.';}
 eqInit();
 </script>
