@@ -12,8 +12,10 @@
 	'use strict';
 	const DADOS = new URL('../../dados/', location.href).href;
 	/* site novo (github.io): banco PRIVADO pelo servidor da equipe (rota /modelos/dados, senha da equipe); site do estúdio: pasta dados/ */
-	const REMOTO = !/(^|\.)workers\.dev$/.test(location.hostname) && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
-	const SERVIDOR_EQUIPE = 'https://sons-problems.problemsbloxcreate.workers.dev';
+	// no endereço único (porteiro) o banco vem pelo /nuvem/ com o login do Google (sem senha)
+	const PORTEIRO = location.hostname === 'estudio.problemsraiz.workers.dev';
+	const REMOTO = PORTEIRO || (!/(^|\.)workers\.dev$/.test(location.hostname) && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname));
+	const SERVIDOR_EQUIPE = PORTEIRO ? location.origin + '/nuvem' : 'https://sons-problems.problemsbloxcreate.workers.dev';
 	async function dados(p, tipo) {
 		if (REMOTO && !senha()) await pedeSenha();
 		const r = REMOTO ? await fetch(SERVIDOR_EQUIPE + '/modelos/dados?p=' + encodeURIComponent(p), { headers: { 'x-senha': senha() }, cache: 'no-store' }) : await fetch(DADOS + p, { cache: 'no-store' });
