@@ -400,7 +400,7 @@ Pesquisadas em out/2026; texto parafraseado.
 
 ## A aba 🧊 Modelador e o robô
 
-O Modelador é uma página separada do estúdio (botão "🧊 Modelador ↗" no topo do estúdio, endereço `<site>/modelador/`). O código-fonte dela fica neste repositório (`pagina/index.html`) e é copiado para `site/modelador/index.html` no repositório do estúdio. Ela tem três partes:
+O Modelador é um projeto separado, aberto pelo menu do Estúdio Problems (endereço único `/modelador/`, login do Google do menu). O código-fonte da página é o `index.html` na raiz deste repositório, publicado pelo GitHub Pages (Action "Publicar o Modelador"). Ela tem três partes:
 
 - **Banco**: todos os modelos de `site/dados/modelos` em 3D (girar, aproximar, ver de frente/lado/costas/cima, grade de blocos, jogador de escala, testar a animação das partes `head`, `right_arm`, `left_arm`, `right_leg`, `left_leg`), a textura, a folha de conferência (`site/dados/modelos-fotos/<id>.png`) e os arquivos para baixar (JSON do estúdio, `model.bbs.json` + `model.png` para o BBS, `.bbmodel` de `site/dados/modelos-export/<id>.bbmodel`).
 - **Pedir modelo**: nome, tipo (personagem, objeto, item de mão, bloco), descrição, até 3 imagens de referência, pack. Usa a senha da equipe (a mesma da biblioteca de sons).
