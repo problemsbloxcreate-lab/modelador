@@ -187,13 +187,15 @@ def ler(alvo):
         return json.load(f), p
 
 
-def montar_arquivo(modelo, nome, pack, tipo, uso, texturas, mao=None):
+def montar_arquivo(modelo, nome, pack, tipo, uso, texturas, mao=None, animacoes=None):
     """arquivo do banco: modelo vai como TEXTO JSON (é assim que o banco guarda); texturas = [(nome, bytes_png)]."""
     d = {"nome": nome, "pack": pack, "tipo": tipo, "uso": uso,
          "modelo": json.dumps(modelo, ensure_ascii=False, separators=(",", ":")),
          "tex": [{"n": n, "p": base64.b64encode(p).decode()} for n, p in texturas]}
     if mao:
         d["mao"] = mao
+    if animacoes:
+        d["animacoes"] = animacoes  # fora do "modelo" (o estúdio antigo continua lendo o modelo igual)
     return d
 
 
@@ -220,6 +222,7 @@ def registrar(id_):
         json.dump(lista, open(lp, "w", encoding="utf-8"), ensure_ascii=False)
     idx = json.load(open(INDICE, encoding="utf-8"))
     it = {"id": id_, "nome": d["nome"], "pack": d.get("pack", "outros"), "tex": [t["n"] for t in d.get("tex", [])],
+          **({"anims": [x["nome"] for x in d["animacoes"]]} if d.get("animacoes") else {}),
           "tipo": d.get("tipo", "objeto"), "uso": d.get("uso", "mao")}
     if d.get("mao"):
         it["mao"] = d["mao"]
@@ -503,6 +506,62 @@ def de_bbmodel(bb, avisos=None):
     return {"groups": G, "texture": [atlas.width, atlas.height]}, b.getvalue()
 
 
+def _num(v):
+    try:
+        return float(str(v).strip() or 0)
+    except Exception:
+        return 0.0  # expressão Molang (ex.: math.sin(query.anim_time)) não entra: vira 0
+
+
+def anims_de_bbmodel(bb, nomes_grupo=None):
+    """animações do Blockbench → lista do banco: [{nome, dur, loop, ossos:{grupo:{rotation|position|scale:[[t,x,y,z,interp],...]}}}].
+    Valores como no Blockbench (graus e pixels, eixos do Blockbench); o estúdio e o Modelador trocam o sinal de x e z ao tocar,
+    igual fazem com o 'rotate' dos grupos. nomes_grupo: uuid → nome usado no banco (se o conversor renomeou)."""
+    out = []
+    for a in bb.get("animations", []) or []:
+        ossos = {}
+        for uid, an in (a.get("animators") or {}).items():
+            if an.get("type", "bone") != "bone":
+                continue
+            nome = (nomes_grupo or {}).get(uid) or an.get("name")
+            if not nome:
+                continue
+            canais = {}
+            for k in an.get("keyframes", []) or []:
+                ch = k.get("channel")
+                if ch not in ("rotation", "position", "scale"):
+                    continue
+                dp = (k.get("data_points") or [{}])[0]
+                canais.setdefault(ch, []).append([round(_num(k.get("time")), 4), _num(dp.get("x")), _num(dp.get("y")), _num(dp.get("z")), k.get("interpolation") or "linear"])
+            for ch in canais:
+                canais[ch].sort(key=lambda x: x[0])
+            if canais:
+                ossos[nome] = canais
+        if ossos:
+            out.append({"nome": a.get("name") or "animacao", "dur": round(_num(a.get("length")) or 1.0, 4), "loop": a.get("loop") or "once", "ossos": ossos})
+    return out
+
+
+def anims_para_bbmodel(anims, uuid_grupo):
+    """banco → animações do .bbmodel (para abrir no Blockbench e continuar animando)."""
+    out = []
+    for a in anims or []:
+        animators = {}
+        for osso, canais in (a.get("ossos") or {}).items():
+            uid = uuid_grupo.get(osso)
+            if not uid:
+                continue
+            kfs = []
+            for ch, lst in canais.items():
+                for t, x, y, z, it in lst:
+                    kfs.append({"channel": ch, "data_points": [{"x": x, "y": y, "z": z}], "uuid": str(_uuid.uuid4()), "time": t, "color": -1, "interpolation": it})
+            animators[uid] = {"name": osso, "type": "bone", "keyframes": kfs}
+        out.append({"uuid": str(_uuid.uuid4()), "name": a.get("nome", "animacao"), "loop": a.get("loop", "loop"), "override": False,
+                    "length": a.get("dur", 1), "snapping": 24, "selected": False, "anim_time_update": "", "blend_weight": "",
+                    "start_delay": "", "loop_delay": "", "animators": animators})
+    return out
+
+
 def para_bbmodel(d, nome=None):
     """arquivo do banco → .bbmodel (Blockbench 4.10+, formato 'Generic Model', UV por face) para a equipe abrir e retocar.
     Para mandar ao jogo pelo BBS depois de retocar: no Blockbench, plugin 'BBS Model Ex/importer' → Export BBS model."""
@@ -545,7 +604,8 @@ def para_bbmodel(d, nome=None):
     return {"meta": {"format_version": "4.10", "model_format": "free", "box_uv": False}, "name": nome or d.get("nome", "modelo"),
             "model_identifier": "", "visible_box": [1, 1, 0], "variable_placeholders": "", "variable_placeholder_buttons": [],
             "timeline_setups": [], "unhandled_root_fields": {}, "resolution": {"width": tw, "height": th},
-            "elements": els, "outliner": raiz, "textures": texturas, "animations": []}
+            "elements": els, "outliner": raiz, "textures": texturas,
+            "animations": anims_para_bbmodel(d.get("animacoes"), {gn: n["uuid"] for gn, n in nos.items()})}
 
 
 # ---------------------------------------------------------------- jogo: BBS e pacote de recursos (Java 1.20.1)

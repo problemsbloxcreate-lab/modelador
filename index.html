@@ -88,6 +88,22 @@ main{flex:1;min-height:0;display:flex}
 .tipo b{display:block}
 .tipo span{font-size:12px;color:var(--muted)}
 .tipo[aria-pressed="true"]{border-color:var(--accent);background:rgba(61,155,255,.14)}
+.tipo i{display:block;font-style:normal;font-size:11.5px;color:var(--muted);margin-top:4px;font-family:var(--f-mono)}
+fieldset.bloco{border:1px solid var(--line);border-radius:12px;padding:12px 14px 4px;margin:0 0 16px}
+fieldset.bloco legend{font-weight:700;padding:0 6px}
+.marcas{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.marcas label{display:flex;gap:7px;align-items:flex-start;border:1px solid var(--line);border-radius:9px;padding:7px 9px;background:var(--panel-2);cursor:pointer;font-size:13px}
+.marcas label small{display:block;color:var(--muted);font-size:11.5px}
+.marcas input{margin-top:2px}
+.marcas.off{opacity:.45;pointer-events:none}
+.chk{display:flex;gap:8px;align-items:flex-start;font-size:13px}
+.etapas{display:flex;gap:8px;overflow-x:auto;padding:8px 0 2px}
+.etapas figure{margin:0;flex:none;width:260px}
+.etapas img{width:260px;height:auto;border-radius:8px;border:1px solid var(--line);background:#16181c;display:block;cursor:zoom-in}
+.etapas figcaption{font-size:11.5px;color:var(--muted);margin-top:3px}
+.aprova{margin-top:10px;border:1px solid var(--warn);border-radius:10px;padding:10px 12px;background:rgba(255,207,74,.07)}
+.aprova textarea{width:100%;min-height:60px;margin:8px 0;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:8px}
+.st.silhueta{background:rgba(255,207,74,.22);color:var(--warn)}.st.aprovado{background:rgba(61,155,255,.18);color:#8cc4ff}
 .refs{border:1.5px dashed var(--line);border-radius:10px;padding:14px;text-align:center;color:var(--muted);cursor:pointer}
 .refs.sobre{border-color:var(--accent);color:var(--text)}
 .thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
@@ -179,7 +195,7 @@ main{flex:1;min-height:0;display:flex}
         <span class="sep"></span>
         <button class="btn peq" id="tGrade" aria-pressed="true" title="Chão em blocos de 16 px">Grade</button>
         <button class="btn peq" id="tEscala" aria-pressed="false" title="Jogador de 2 blocos ao lado, para comparar o tamanho">Escala</button>
-        <button class="btn peq" id="tAnim" aria-pressed="false" title="Testa as partes que mexem (cabeça, braços, pernas)">Animar</button>
+        <select id="selAnim" class="btn peq" aria-label="Animação" title="Toca as animações do modelo (feitas no Blockbench ou pelo robô)"><option value="">Sem animação</option></select>
         <button class="btn peq" id="tGira" aria-pressed="false" title="Fica girando">Girar</button>
         <select id="selTex" class="btn peq" aria-label="Textura" hidden></select>
         <span class="esp" style="flex:1"></span>
@@ -218,6 +234,27 @@ main{flex:1;min-height:0;display:flex}
           <button type="button" class="tipo" data-t="bloco" aria-pressed="false"><b>🟫 Bloco</b><span>Um bloco de 16×16×16 com textura nova.</span></button>
         </div>
       </div>
+      <div class="campo"><label>Complexidade do modelo</label>
+        <div class="tipos" id="niveis">
+          <button type="button" class="tipo" data-n="simples" aria-pressed="false"><b>Simples</b><span>Forma clara e direta, poucos detalhes.</span><i>até 12 cubos · textura 32 · ~5 min</i></button>
+          <button type="button" class="tipo" data-n="medio" aria-pressed="true"><b>Médio</b><span>Bom para a maioria dos vídeos.</span><i>12–40 cubos · textura 64 · ~10 min</i></button>
+          <button type="button" class="tipo" data-n="detalhado" aria-pressed="false"><b>Detalhado</b><span>Acessórios, dobras, textura caprichada.</span><i>40–120 cubos · textura 64–128 · ~20 min</i></button>
+          <button type="button" class="tipo" data-n="maximo" aria-pressed="false"><b>Máximo</b><span>Personagem principal, close de câmera.</span><i>120–300 cubos · textura 128 · ~35 min</i></button>
+        </div>
+        <small>Quanto mais complexo, mais tempo e mais do limite do Claude da equipe o robô usa.</small></div>
+      <fieldset class="bloco" id="blocoAnim"><legend>Animação</legend>
+        <div class="campo"><label>Nível da animação</label>
+          <div class="tipos" id="aniveis">
+            <button type="button" class="tipo" data-a="nenhuma" aria-pressed="false"><b>Sem animação</b><span>Só o modelo parado.</span></button>
+            <button type="button" class="tipo" data-a="basica" aria-pressed="false"><b>Básica</b><span>Movimento simples e limpo, como no jogo.</span></button>
+            <button type="button" class="tipo" data-a="natural" aria-pressed="true"><b>Natural</b><span>Antecipação, peso, balanço e partes que chegam depois.</span></button>
+            <button type="button" class="tipo" data-a="expressiva" aria-pressed="false"><b>Expressiva</b><span>Exagero de desenho animado: estica, achata, pose forte.</span></button>
+          </div></div>
+        <div class="campo"><label>Quais animações são necessárias</label>
+          <div class="marcas" id="marcas"></div>
+          <input type="text" id="pAnimOutras" maxlength="200" placeholder="Outras (ex.: dançar, abrir as asas, piscar a luz)" style="margin-top:6px"></div>
+      </fieldset>
+      <div class="campo"><label class="chk"><input type="checkbox" id="pAprovar" checked><span><b>Parar na silhueta para eu aprovar</b><br><small>O robô monta só a forma em cubos, manda as fotos e espera você aprovar (ou pedir para refazer) antes de detalhar, pintar e animar. Evita gastar o limite num modelo que começou errado.</small></span></label></div>
       <div class="campo"><label for="pDesc">Descrição</label>
         <textarea id="pDesc" maxlength="1800" required placeholder="Forma, cores, tamanho (em blocos), partes que mexem, detalhes importantes, para que vídeo é…"></textarea>
         <small>Quanto mais claro, melhor: tamanho em blocos, cores principais, o que tem que dar para reconhecer de longe.</small></div>
@@ -227,7 +264,7 @@ main{flex:1;min-height:0;display:flex}
       <div class="campo"><label for="pPack">Pack (pasta do banco)</label>
         <select id="pPack"></select></div>
       <div class="campo"><label for="pPor">Quem está pedindo</label><input type="text" id="pPor" maxlength="40" placeholder="Seu nome"></div>
-      <button class="btn pri" id="enviar" type="submit">🤖 Pedir ao robô</button>
+      <button class="btn pri" id="enviar" type="submit">Pedir ao robô</button>
       <div class="msg" id="msgPed" role="status"></div>
     </form>
   </section>
@@ -341,7 +378,7 @@ $$('[data-cam]').forEach(b=>b.onclick=()=>{const v=VISTAS[b.dataset.cam];V.yaw=v
 function liga(id,f){const b=$(id);b.onclick=()=>{const on=b.getAttribute('aria-pressed')!=='true';b.setAttribute('aria-pressed',String(on));f(on);V.sujo=true;};}
 liga('#tGrade',on=>{if(V.grade)V.grade.visible=on;});
 liga('#tEscala',on=>{fazEscala();V.escala.visible=on;enquadra();if(on){V.alvo.x+=0.3;V.dist*=1.25;}});
-liga('#tAnim',on=>{V.anim=on;V.t0=performance.now();if(!on)poseZero();});
+$('#selAnim').onchange=e=>{V.anim=e.target.value;V.t0=performance.now();if(!V.anim)poseZero();V.sujo=true;};
 liga('#tGira',on=>{V.gira=on;});
 function controles(cv){const ptr=new Map();let ult=null,pin=0;
  cv.addEventListener('contextmenu',e=>e.preventDefault());
@@ -354,8 +391,20 @@ function controles(cv){const ptr=new Map();let ult=null,pin=0;
  cv.addEventListener('wheel',e=>{e.preventDefault();V.dist=Math.max(0.15,Math.min(80,V.dist*Math.exp(e.deltaY*0.0012)));V.sujo=true;},{passive:false});}
 /* teste de animação: as partes com os nomes do jogo (head, right_arm…) mexem como o estúdio mexe */
 const OSSOS={head:'cabeça',right_arm:'braço direito',left_arm:'braço esquerdo',right_leg:'perna direita',left_leg:'perna esquerda'};
-function poseZero(){if(!V.obj)return;for(const k in V.obj.node){const n=V.obj.node[k];n.userData.b.rotation.copy(n.userData.r0);}}
-function animar(t){const N=V.obj.node,s=Math.sin(t*5.5),r=(k,x,y,z)=>{const n=N[k];if(!n)return;const r0=n.userData.r0;n.userData.b.rotation.set(r0.x+(x||0),r0.y+(y||0),r0.z+(z||0),'ZYX');};
+function poseZero(){if(!V.obj)return;for(const k in V.obj.node){const n=V.obj.node[k];n.userData.b.rotation.copy(n.userData.r0);if(n.userData.p0)n.position.copy(n.userData.p0);n.userData.b.scale.set(1,1,1);}}
+/* animações do modelo (d.animacoes, vindas do .bbmodel): quadros-chave em graus/pixels com os eixos do Blockbench.
+   Como no estúdio, x e z trocam de sinal (o modelo do banco olha para +z). Interpolação: linear, catmullrom, bezier (≈ catmull), step. */
+function canal(lst,t){if(!lst||!lst.length)return null;if(t<=lst[0][0])return lst[0].slice(1,4);const u=lst[lst.length-1];if(t>=u[0])return u.slice(1,4);
+ let i=0;while(i<lst.length-1&&lst[i+1][0]<=t)i++;const a=lst[i],b=lst[i+1],f=(t-a[0])/Math.max(1e-6,b[0]-a[0]),it=b[4]||a[4]||'linear';
+ if(a[4]==='step')return a.slice(1,4);
+ if(it==='catmullrom'||it==='bezier'){const p0=lst[i-1]||a,p3=lst[i+2]||b;return [1,2,3].map(k=>{const P0=p0[k],P1=a[k],P2=b[k],P3=p3[k],f2=f*f,f3=f2*f;return 0.5*((2*P1)+(-P0+P2)*f+(2*P0-5*P1+4*P2-P3)*f2+(-P0+3*P1-3*P2+P3)*f3);});}
+ return [1,2,3].map(k=>a[k]+(b[k]-a[k])*f);}
+function tocaAnim(an,t){const N=V.obj.node,dur=an.dur||1,tt=an.loop==='loop'?t%dur:Math.min(t,dur),D=Math.PI/180;
+ for(const osso in an.ossos){const n=N[osso];if(!n)continue;const c=an.ossos[osso],r0=n.userData.r0;if(!n.userData.p0)n.userData.p0=n.position.clone();
+  const r=canal(c.rotation,tt);n.userData.b.rotation.set(r0.x-(r?r[0]*D:0),r0.y+(r?r[1]*D:0),r0.z-(r?r[2]*D:0),'ZYX');
+  const p=canal(c.position,tt);n.position.set(n.userData.p0.x-(p?p[0]*PU:0),n.userData.p0.y+(p?p[1]*PU:0),n.userData.p0.z-(p?p[2]*PU:0));
+  const sc=canal(c.scale,tt);n.userData.b.scale.set(sc?sc[0]:1,sc?sc[1]:1,sc?sc[2]:1);}}
+function animar(t){if(V.anim&&V.anim!=='__teste'){const an=(V.anims||[]).find(a=>a.nome===V.anim);if(an){tocaAnim(an,t);return;}}const N=V.obj.node,s=Math.sin(t*5.5),r=(k,x,y,z)=>{const n=N[k];if(!n)return;const r0=n.userData.r0;n.userData.b.rotation.set(r0.x+(x||0),r0.y+(y||0),r0.z+(z||0),'ZYX');};
  r('right_leg',0.6*s);r('left_leg',-0.6*s);r('right_arm',-0.55*s);r('left_arm',0.55*s);r('head',0.08*Math.sin(t*2.2),0.35*Math.sin(t*1.3));
  /* partes extras (cauda, asas, antena…): balançam de leve para mostrar que giram no pivô certo */
  let i=0;for(const k in N){if(OSSOS[k]||k==='body'||k==='all'||k==='root')continue;if(!N[k].userData.b.children.some(c=>c.isMesh))continue;r(k,0.12*Math.sin(t*3+i),0.12*Math.sin(t*2.4+i*1.7));i++;}}
@@ -371,7 +420,9 @@ async function abre(id,texNome){B.sel=id;$$('#itens .item').forEach(b=>b.setAttr
  if(B.sel!==id)return;const tex=await texDe(d,texNome);if(B.sel!==id)return;
  if(V.obj){V.scene.remove(V.obj.body);V.obj.body.traverse(o=>{if(o.isMesh)o.geometry.dispose();});V.obj.mat.dispose();}
  V.obj=montaCorpo(d.modeloObj,tex);V.obj.id=id;V.scene.add(V.obj.body);V.tex=tex?tex.userData.n:'';
- const temOsso=Object.keys(OSSOS).some(k=>V.obj.node[k]);$('#tAnim').disabled=!temOsso&&Object.keys(V.obj.node).length<2;if($('#tAnim').disabled){$('#tAnim').setAttribute('aria-pressed','false');V.anim=false;}
+ const temOsso=Object.keys(OSSOS).some(k=>V.obj.node[k]);V.anims=d.animacoes||[];
+ {const sa=$('#selAnim'),ant=V.anim;sa.innerHTML='<option value="">Sem animação</option>'+V.anims.map(a=>`<option value="${esc(a.nome)}">${esc(a.nome)} · ${(+a.dur).toFixed(1)} s</option>`).join('')+((temOsso||Object.keys(V.obj.node).length>1)?'<option value="__teste">teste das partes</option>':'');
+  V.anim=V.anims.some(a=>a.nome===ant)?ant:(V.anims[0]?V.anims[0].nome:'');sa.value=V.anim;if(!V.anim)poseZero();}
  const st=$('#selTex');if((d.tex||[]).length>1){st.hidden=false;st.innerHTML=d.tex.map(t=>`<option ${t.n===V.tex?'selected':''}>${esc(t.n)}</option>`).join('');st.onchange=()=>abre(id,st.value);}else st.hidden=true;
  if(!texNome){V.yaw=VISTAS['34'][0];V.pitch=VISTAS['34'][1];}
  enquadra();if(V.anim)V.t0=performance.now();V.sujo=true;mostraInfo(d,tex);}
@@ -380,7 +431,7 @@ async function mostraInfo(d,tex){const m=d.modeloObj,gs=Object.keys(m.groups||{}
  const it=B.itens.find(x=>x.id===d.id)||{};
  const box=$('#info');box.innerHTML=`<h2>${esc(d.nome||d.id)}</h2><div class="sub">${esc(nomePack(d.pack||it.pack||'outros'))} · ${tipoTxt(d)}</div>
   <dl><dt>id</dt><dd>${esc(d.id||it.id)}</dd><dt>cubos</dt><dd>${contaCubos(m)}</dd><dt>partes</dt><dd>${gs.length}</dd><dt>textura</dt><dd>${tw[0]}×${tw[1]} px${(d.tex||[]).length>1?' · '+d.tex.length+' variações':''}</dd>
-  <dt>anima</dt><dd>${ossos.length?ossos.map(k=>OSSOS[k]).join(', '):'nenhuma parte do boneco'}</dd></dl>
+  <dt>partes</dt><dd>${ossos.length?ossos.map(k=>OSSOS[k]).join(', '):'nenhuma parte do boneco'}</dd><dt>animações</dt><dd>${(d.animacoes||[]).length?d.animacoes.map(a=>esc(a.nome)).join(', '):'nenhuma'}</dd></dl>
   <h3>Textura</h3><div class="tex">${tex?`<img alt="Textura ${esc(V.tex)}" src="${tex.userData.src}">`:'<span class="nota">sem textura</span>'}</div>
   <h3>Baixar</h3><div class="baixar" id="baixar">
    <button class="btn peq" data-b="json">📦 Modelo do estúdio (.json)</button>
@@ -430,8 +481,21 @@ $('#okSenha').onclick=()=>{const v=$('#senha').value.trim();if(!v)return;try{loc
 async function eq(caminho,op){op=op||{};op.headers=Object.assign({'x-senha':senha()},op.headers||{});const r=await fetch(EQ.url+caminho,op);
  if(r.status===401){try{localStorage.removeItem('estudio.senhaSons');}catch(e){}mostraSenha();throw new Error('Senha da equipe errada. Digite de novo.');}
  if(!r.ok){let m='';try{m=(await r.json()).erro||'';}catch(e){}throw new Error(m||('O servidor da equipe respondeu '+r.status));}return r.json();}
-const PED={tipo:'personagem',refs:[],base:null,lista:[],timer:0};
-$$('#tipos .tipo').forEach(b=>b.onclick=()=>{PED.tipo=b.dataset.t;$$('#tipos .tipo').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));});
+const PED={tipo:'personagem',nivel:'medio',anivel:'natural',refs:[],base:null,lista:[],timer:0,img:{}};
+const ANIMS=[['parado','Parado','respira, olha em volta',['personagem','objeto','mao','bloco']],['andar','Andar','ciclo de passos',['personagem']],['correr','Correr','ciclo rápido',['personagem']],
+ ['pular','Pular','agacha, sobe, cai',['personagem']],['falar','Falar','gesticula',['personagem']],['atacar','Atacar','golpe com antecipação',['personagem']],
+ ['dano','Levar dano','recua',['personagem']],['comemorar','Comemorar','braços para cima',['personagem']],['cair','Cair / morrer','tomba',['personagem']],
+ ['sentar','Sentar','senta e fica',['personagem']],['acenar','Acenar','tchau',['personagem']],['abrir','Abrir / fechar','tampa, porta',['objeto','bloco']],
+ ['girar','Girar / flutuar','item mágico, moeda',['objeto','mao','bloco']],['usar','Usar','balançar, atirar',['mao']]];
+const ANIM_PADRAO={personagem:['parado','andar'],objeto:[],mao:[],bloco:[]};
+function desenhaMarcas(){const box=$('#marcas'),marc=new Set(PED.marcadas||ANIM_PADRAO[PED.tipo]||[]);
+ box.innerHTML=ANIMS.filter(a=>a[3].includes(PED.tipo)).map(a=>`<label><input type="checkbox" value="${a[0]}" ${marc.has(a[0])?'checked':''}><span>${a[1]}<small>${a[2]}</small></span></label>`).join('');
+ box.classList.toggle('off',PED.anivel==='nenhuma');$$('#marcas input').forEach(i=>i.onchange=()=>{PED.marcadas=$$('#marcas input:checked').map(x=>x.value);});}
+function escolhe(sel,attr,chave,depois){$$(sel+' .tipo').forEach(b=>b.onclick=()=>{PED[chave]=b.dataset[attr];$$(sel+' .tipo').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));depois&&depois();});}
+escolhe('#tipos','t','tipo',()=>{PED.marcadas=null;if(PED.tipo!=='personagem'&&PED.anivel!=='nenhuma'&&!(ANIM_PADRAO[PED.tipo]||[]).length){}desenhaMarcas();});
+escolhe('#niveis','n','nivel',()=>{$('#pAprovar').checked=PED.nivel!=='simples';});
+escolhe('#aniveis','a','anivel',desenhaMarcas);
+desenhaMarcas();
 function mostraBase(){$('#campoBase').hidden=!PED.base;if(PED.base)$('#txtBase').textContent='O robô vai MUDAR o modelo “'+PED.base.nome+'” ('+PED.base.id+') em vez de criar outro. Descreva o que mudar.';}
 $('#tirarBase').onclick=()=>{PED.base=null;mostraBase();};
 /* referência: reduz para no máximo 1024 px e manda como JPEG (cabe no servidor da equipe) */
@@ -448,7 +512,8 @@ try{$('#pPor').value=localStorage.getItem('modelador.por')||'';}catch(e){}
 $('#fPed').addEventListener('submit',async e=>{e.preventDefault();const msg=$('#msgPed'),bt=$('#enviar');msg.className='msg';
  if(!EQ.url){msg.className='msg err';msg.textContent='O servidor da equipe não está ligado neste site.';return;}
  if(!senha()){msg.className='msg err';msg.textContent='Digite a senha da equipe primeiro.';mostraSenha();$('#senha').focus();return;}
- const corpo={nome:$('#pNome').value.trim(),tipo:PED.tipo,descricao:$('#pDesc').value.trim(),pack:$('#pPack').value==='__novo'?'estudio':$('#pPack').value,por:$('#pPor').value.trim(),base:PED.base?PED.base.id:'',refs:PED.refs.length,status:'rascunho'};
+ const corpo={nome:$('#pNome').value.trim(),tipo:PED.tipo,descricao:$('#pDesc').value.trim(),pack:$('#pPack').value==='__novo'?'estudio':$('#pPack').value,por:$('#pPor').value.trim(),base:PED.base?PED.base.id:'',refs:PED.refs.length,status:'rascunho',
+  nivel:PED.nivel,anim_nivel:PED.anivel,anims:PED.anivel==='nenhuma'?[]:$$('#marcas input:checked').map(x=>x.value),anim_outras:PED.anivel==='nenhuma'?'':$('#pAnimOutras').value.trim(),aprovar:$('#pAprovar').checked};
  if(!corpo.nome||!corpo.descricao){msg.className='msg err';msg.textContent='Preencha o nome e a descrição.';return;}
  try{localStorage.setItem('modelador.por',corpo.por);}catch(e){}
  bt.disabled=true;msg.textContent='Mandando o pedido…';
@@ -460,18 +525,31 @@ $('#fPed').addEventListener('submit',async e=>{e.preventDefault();const msg=$('#
   setTimeout(()=>vai('pedidos'),900);}
  catch(err){msg.className='msg err';msg.textContent=err.message;}finally{bt.disabled=false;}});
 const quando=t=>{if(!t)return'';const d=new Date(t);return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});};
-const stTxt={rascunho:'rascunho',aberto:'na fila',fazendo:'fazendo',feito:'pronto',erro:'deu erro'};
+const stTxt={rascunho:'rascunho',aberto:'na fila',fazendo:'fazendo',silhueta:'esperando sua aprovação',aprovado:'continuando',feito:'pronto',erro:'deu erro'};
+const NIVEL_TXT={simples:'Simples',medio:'Médio',detalhado:'Detalhado',maximo:'Máximo'},ANIV_TXT={nenhuma:'sem animação',basica:'animação básica',natural:'animação natural',expressiva:'animação expressiva'};
+const nomeAnim=k=>(ANIMS.find(a=>a[0]===k)||[k,k])[1];
+/* imagens das etapas (silhueta, detalhes, textura, animações): o robô manda ao vivo; a página baixa com o login e mostra em miniatura */
+async function etapasDe(p){const box=document.querySelector(`.etapas[data-id="${p.id}"]`);if(!box)return;let l=[];try{l=(await eq('/modelo/etapas?id='+encodeURIComponent(p.id))).etapas||[];}catch(e){return;}
+ for(const e of l){const k=p.id+':'+e.n;if(!PED.img[k]){try{const r=await fetch(EQ.url+'/modelo/etapa?id='+encodeURIComponent(p.id)+'&n='+e.n,{headers:{'x-senha':senha()}});if(r.ok)PED.img[k]=URL.createObjectURL(await r.blob());}catch(_){}}}
+ box.innerHTML=l.filter(e=>PED.img[p.id+':'+e.n]).map(e=>`<figure><a href="${PED.img[p.id+':'+e.n]}" target="_blank" rel="noopener"><img src="${PED.img[p.id+':'+e.n]}" alt="${esc(e.legenda)}"></a><figcaption>${esc(e.legenda)}</figcaption></figure>`).join('');
+ box.hidden=!box.innerHTML;if(!box.hidden)box.scrollLeft=box.scrollWidth;}
+async function decide(id,status,comentario){try{const r=await eq('/modelo/pedido?id='+encodeURIComponent(id),{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({status,comentario:comentario||''})});
+ if(!r.disparado)alert('Salvei, mas não consegui chamar o robô agora ('+(r.claude||'sem resposta')+').');}catch(e){alert(e.message);}carregaPedidos();}
 async function carregaPedidos(){const box=$('#listaPed');clearTimeout(PED.timer);
  if(!EQ.url){box.innerHTML='<p class="nota">O servidor da equipe não está ligado neste site.</p>';return;}
  if(!senha()){box.innerHTML='<p class="nota">Digite a senha da equipe na aba ✏️ Pedir modelo para ver os pedidos.</p>';return;}
  try{const j=await eq('/modelos/pedidos');PED.lista=(j.pedidos||[]).filter(p=>p.status!=='rascunho').sort((a,b)=>(b.criadoEm||0)-(a.criadoEm||0));}
  catch(e){box.innerHTML=`<p class="msg err">${esc(e.message)}</p>`;return;}
- const andando=PED.lista.filter(p=>p.status==='aberto'||p.status==='fazendo').length;$('#nPed').textContent=andando?'('+andando+')':'';
- box.innerHTML=PED.lista.length?PED.lista.map(p=>`<article class="ped"><div class="cab"><b>${esc(p.nome)}</b><span class="st ${esc(p.status)}">${esc(stTxt[p.status]||p.status)}</span><span class="nota">${esc(p.tipo==='mao'?'item de mão':p.tipo)} · ${esc(nomePack(p.pack||'estudio'))}${p.base?' · ajuste de '+esc(p.base):''} · ${esc(p.por||'')} ${quando(p.criadoEm)}</span></div>
-   <p class="desc">${esc(p.descricao)}</p>${p.etapa&&p.status==='fazendo'?`<p class="resp">⏳ ${esc(p.etapa)}</p>`:''}${p.resposta?`<p class="resp">${esc(p.resposta)}</p>`:''}
+ const andando=PED.lista.filter(p=>['aberto','fazendo','aprovado'].includes(p.status)).length;$('#nPed').textContent=andando?'('+andando+')':'';
+ box.innerHTML=PED.lista.length?PED.lista.map(p=>`<article class="ped"><div class="cab"><b>${esc(p.nome)}</b><span class="st ${esc(p.status)}">${esc(stTxt[p.status]||p.status)}</span><span class="nota">${esc(p.tipo==='mao'?'item de mão':p.tipo)} · ${esc(NIVEL_TXT[p.nivel]||'Médio')} · ${esc(ANIV_TXT[p.anim_nivel]||'')}${(p.anims||[]).length?' ('+p.anims.map(nomeAnim).join(', ')+')':''} · ${esc(nomePack(p.pack||'estudio'))}${p.base?' · ajuste de '+esc(p.base):''} · ${esc(p.por||'')} ${quando(p.criadoEm)}</span></div>
+   <p class="desc">${esc(p.descricao)}</p><div class="etapas" data-id="${esc(p.id)}" hidden></div>${p.etapa&&(p.status==='fazendo'||p.status==='aprovado')?`<p class="resp">⏳ ${esc(p.etapa)}</p>`:''}${p.resposta?`<p class="resp">${esc(p.resposta)}</p>`:''}
+   ${p.status==='silhueta'?`<div class="aprova"><b>A silhueta está pronta.</b> Confira as fotos acima. Aprovando, o robô detalha, pinta e anima. Se algo estiver errado (tamanho, proporção, partes), escreva o que mudar e peça para refazer.<textarea data-com="${esc(p.id)}" placeholder="O que mudar (só para refazer)"></textarea><div class="acoes"><button class="btn peq pri" data-ok="${esc(p.id)}">Aprovar e continuar</button><button class="btn peq" data-refaz="${esc(p.id)}">Refazer a silhueta</button></div></div>`:''}
    <div class="acoes">${p.modelo?`<button class="btn peq" data-ver="${esc(p.modelo)}">🧊 Ver no banco</button>`:''}${p.run?`<a class="btn peq" href="${esc(p.run)}" target="_blank" rel="noopener">Ver o robô trabalhando</a>`:''}</div></article>`).join(''):'<p class="nota">Nenhum pedido ainda.</p>';
  $$('[data-ver]').forEach(b=>b.onclick=async()=>{await recarregaBanco();vai('banco');abre(b.dataset.ver);});
- if(andando)PED.timer=setTimeout(()=>{if(!$('[data-v="pedidos"].vista').hidden)carregaPedidos();},20000);}
+ $$('[data-ok]').forEach(b=>b.onclick=()=>{b.disabled=true;decide(b.dataset.ok,'aprovado');});
+ $$('[data-refaz]').forEach(b=>b.onclick=()=>{const c=(document.querySelector(`[data-com="${b.dataset.refaz}"]`)||{}).value||'';if(!c.trim()){alert('Escreva o que mudar na silhueta.');return;}b.disabled=true;decide(b.dataset.refaz,'refazer',c.trim());});
+ PED.lista.slice(0,12).forEach(p=>etapasDe(p));
+ if(andando)PED.timer=setTimeout(()=>{if(!$('[data-v="pedidos"].vista').hidden)carregaPedidos();},15000);}
 async function recarregaBanco(){FRESCO=true;B.doc={};Object.keys(MINI.feito).forEach(k=>delete MINI.feito[k]);await carregaBanco();}
 $('#atuPed').onclick=carregaPedidos;
 

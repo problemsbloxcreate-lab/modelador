@@ -53,11 +53,16 @@ def main():
                     g["parent"] = novo
         else:
             av.append(f"--renomear: não achei o grupo {velho}")
+    anims = M3.anims_de_bbmodel(bb)
+    ren = dict(p.split("=", 1) for p in a.renomear)
+    for an in anims:
+        an["ossos"] = {ren.get(k, k): v for k, v in an["ossos"].items() if ren.get(k, k) in mod["groups"]}
+    anims = [an for an in anims if an["ossos"]]
     d = M3.montar_arquivo(mod, a.nome, a.pack, a.tipo, a.uso, [(a.textura, png)],
-                          {"escala": a.escala_mao} if a.escala_mao else None)
+                          {"escala": a.escala_mao} if a.escala_mao else None, anims)
     av2, num = M3.conferir(d)
     p = M3.salvar(a.id, d, a.substituir)
-    out = {"arquivo": p, "numeros": num, "avisos_conversao": av, "avisos_regras": av2}
+    out = {"arquivo": p, "numeros": num, "animacoes": [x["nome"] for x in anims], "avisos_conversao": av, "avisos_regras": av2}
     if a.registrar:
         M3.registrar(a.id)
     if a.foto:

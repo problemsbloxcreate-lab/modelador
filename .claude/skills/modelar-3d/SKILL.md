@@ -18,9 +18,65 @@ O arquivo do banco é a **fonte**. Tudo sai dele com um comando. Escreva sempre 
 - `modelador/ferramentas/bbmodel-para-estudio.py`: converte `.bbmodel` → banco.
 - `modelador/modelos-fonte/*.py`: um script por modelo feito do zero. Rodar de novo refaz o modelo. Use os dois que existem como exemplo: `livro_cor_escondida.py` (objeto) e `golem_musgo.py` (personagem).
 
+- `modelador/ferramentas/bbsemtela.py` + `bb-ajudante.js`: **o jeito principal de modelar agora**. Roda a nossa cópia do Blockbench num navegador invisível e executa uma RECEITA (`.js`) com comandos `BBA.*` (ossos, cubos, molde de textura, pintura por face, animações), tirando fotos de 6 ângulos e quadros de cada animação. Exemplo completo: `modelador/modelos-fonte/exemplo-receita.js`.
+
 **Regras que valem sempre:** nada de textura, som ou modelo da Mojang no repositório (nem "parecido demais", nem tirado de mob do jogo); nunca chave, senha ou e-mail no código; não sobrescreva modelo que já existe (o script se recusa); `git pull --rebase` antes de qualquer push; publicar o site só quando o dono mandar.
 
 ---
+
+## 0. Níveis do pedido, etapas e Blockbench sem tela
+
+### 0.1 Níveis do pedido (o MODELADOR pergunta; leia em `nivel`, `anim_nivel`, `anims` do pedido)
+
+**Complexidade do modelo** (`nivel`). O orçamento de cubos da seção 1.3 vale para o nível Médio; os outros níveis mudam o teto:
+
+| Nível | Cubos | Textura | Rodadas de conferência pelas fotos | Quando |
+|---|---|---|---|---|
+| `simples` | até 12 | 32×32 | 1 | figurante, objeto de fundo, item rápido |
+| `medio` | 12–40 | 64×64 | 2 | a maioria dos vídeos |
+| `detalhado` | 40–120 | 64×64 ou 128×128 | 3 | acessórios, dobras (cotovelo/joelho em 2 cubos), roupa em camadas |
+| `maximo` | 120–300 | 128×128 | até 5 | personagem principal, close de câmera |
+
+Mesmo no Máximo vale a regra "cada cubo muda a silhueta ou mexe sozinho"; o nível alto é para mais PARTES e mais TEXTURA, não para cubinhos de enfeite.
+
+**Animação** (`anim_nivel`, independente do nível do modelo) e **quais** (`anims`, mais o texto livre `anim_outras`):
+
+| `anim_nivel` | Como animar |
+|---|---|
+| `nenhuma` | sem animações (ignore `anims`) |
+| `basica` | movimento limpo como no jogo: poucos quadros-chave, `linear`, sem exagero |
+| `natural` | antecipação antes do movimento, peso (o corpo desce no passo), partes que chegam depois (cabeça e braços atrasam 1–2 quadros), `catmullrom` |
+| `expressiva` | desenho animado: pose forte, `scale` para esticar e achatar (pulo, impacto, susto), exagero no arco, segurar a pose antes de soltar |
+
+Ids das animações (use estes nomes no Blockbench): `parado`, `andar`, `correr`, `pular`, `falar`, `atacar`, `dano`, `comemorar`, `cair`, `sentar`, `acenar`, `abrir`, `girar`, `usar`.
+Duração de referência: parado 2–3 s (loop), andar 0,8–1 s (loop), correr 0,5–0,6 s (loop), pular 0,7–0,9 s (once), atacar 0,5–0,7 s (once), falar 1,5–2 s (loop).
+Ciclos (andar, correr) começam e terminam na MESMA pose (o loop não pode dar tranco). Personagem: os ossos `head`, `right_arm`, `left_arm`, `right_leg`, `left_leg` (e `body`, se tiver) são o que o estúdio toca.
+
+### 0.2 Construir em etapas (e mostrar cada uma)
+
+O robô e o Claude no chat trabalham como um modelador de verdade, e a equipe vê cada passo (imagens em `/tmp/modelo/etapas/NN-nome.png`, que o robô manda para a aba Pedidos):
+
+1. **Silhueta**: ossos com pivô nas juntas + cubos com cores LISAS de cada parte (`BBA.cor` sem textura detalhada). Confira de frente, de lado e de cima contra a referência: proporção, tamanho em blocos, o que se reconhece de longe. Se o pedido pediu aprovação, PARE aqui.
+2. **Detalhes**: os cubos que faltam (acessórios, dobras, camadas) dentro do teto do nível.
+3. **Textura**: `await BBA.molde()` (o Blockbench arruma o UV sem esticar) e pintura por face: cor base com a luz do jogo, grão de material, detalhes desenhados (olhos, costuras, brilho), seção 3.
+4. **Animações**: as marcadas no pedido, no nível pedido; confira os quadros (`--animacoes`).
+5. **Entrega**: `.bbmodel` → banco (`bbmodel-para-estudio.py`, que leva as animações junto), folha final, conferidor sem erros.
+
+Cada rodada de conferência = rodar a receita, olhar `folha.png` com a referência ao lado, escrever o que está errado e corrigir. Não pule a olhada: é ela que separa um modelo bom de um "parecido".
+
+### 0.3 Blockbench sem tela (o jeito principal)
+
+```bash
+python3 modelador/ferramentas/bbsemtela.py /tmp/modelo/receita.js --saida /tmp/modelo/r1 --etapa "1 silhueta" \
+    --referencia /tmp/modelo/ref-0.jpg --animacoes
+# saída: r1/modelo.bbmodel, r1/folha.png (6 ângulos + referência), r1/fotos/*.png, r1/anim-<nome>.png/.gif, r1/info.json (cubos, ossos, textura, animações, erros)
+```
+
+A receita é o corpo de uma função `async` que usa `BBA` (lista completa no topo de `ferramentas/bb-ajudante.js`) e, se precisar, o próprio Blockbench (`Cube`, `Group`, `Texture`, `Animation`). Uma receita só, que cresce a cada etapa: a silhueta é o começo da receita; as etapas seguintes acrescentam molde, pintura e animações no fim. Para continuar um `.bbmodel` (ex.: um modelo que a equipe retocou à mão), use `--abrir arquivo.bbmodel` e uma receita só com o que muda.
+
+Eixos (iguais ao Blockbench): pixels, 1 bloco = 16, y para cima, chão em y = 0, **frente para o norte (-z)**, **direito do personagem em +x**. Pivô de cada osso na junta (cabeça no pescoço, braço no ombro, perna no quadril). Sempre rode `python3 modelador/ferramentas/modelos3d.py conferir <id>` depois de pôr no banco: ele pega osso do lado errado e pivô fora do lugar.
+
+Os modelos antigos por Python puro (`modelos3d.py`, `Modelo`, `Textura`) continuam valendo, mas o Blockbench sem tela é melhor para textura (molde sem esticar, pintura por face) e é o único que faz animação.
 
 ## 1. Planejar antes de pôr o primeiro cubo
 
@@ -39,7 +95,7 @@ Imagine o modelo todo preto contra o céu. Ele ainda se reconhece? Os modeladore
 - **Exagere a proporção para dizer o caráter.** Cabeça grande e corpo pequeno parece **fofo**. Tronco e braços grandes parecem **forte**. Pernas compridas e finas parecem **ágil ou frágil**.
 - **Teste de 3 distâncias:** de longe (silhueta), de meio (cores grandes), de perto (detalhe da textura). Detalhe que só aparece de perto vai para a textura, nunca para cubo.
 
-### 1.3 Orçamento de cubos (números de partida)
+### 1.3 Orçamento de cubos (números de partida, nível Médio; veja 0.1)
 
 | Tipo | Cubos | Exemplo de referência |
 |---|---|---|
