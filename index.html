@@ -73,7 +73,7 @@ main{flex:1;min-height:0;display:flex}
 .info{width:300px;flex:none;border-left:1px solid var(--linha);overflow:auto;padding:var(--e4);background:var(--fundo-2)}
 .info h2{font:700 var(--t-titulo)/1.2 var(--fonte);letter-spacing:-.01em;margin:0 0 var(--e1)}
 .info .sub{color:var(--texto-2);font-size:var(--t-pequeno);margin-bottom:var(--e3)}
-.info h3{font-size:var(--t-legenda);text-transform:uppercase;letter-spacing:.06em;color:var(--texto-2);margin:var(--e4) 0 6px;font-weight:600}
+.info h3{font-size:var(--t-pequeno);color:var(--texto-2);margin:var(--e4) 0 6px;font-weight:600}
 .info dl{display:grid;grid-template-columns:auto 1fr;gap:var(--e1) 10px;margin:0;font-size:var(--t-pequeno)}
 .info dt{color:var(--texto-2)}
 .info dd{margin:0;font-family:var(--f-mono);font-size:var(--t-legenda);overflow-wrap:anywhere}
@@ -149,7 +149,7 @@ fieldset.bloco legend{font-weight:600;padding:0 6px}
 .ini-acoes .ic svg{width:20px;height:20px}
 .ini-acoes b{display:block;font-size:var(--t-destaque);font-weight:600}
 .ini-acoes small{color:var(--texto-2);font-size:var(--t-legenda)}
-.ini-sec{display:flex;align-items:center;gap:10px;margin:0 0 var(--e3);font-size:var(--t-legenda);text-transform:uppercase;letter-spacing:.06em;color:var(--texto-2);font-weight:600}
+.ini-sec{display:flex;align-items:center;gap:10px;margin:0 0 var(--e3);font-size:var(--t-destaque);color:var(--texto);font-weight:600}
 .ini-sec .esp{flex:1}.ini-sec button{text-transform:none;letter-spacing:0}
 .ini-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--e3)}
 .ini-card{background:var(--fundo-2);border:1px solid var(--linha);border-radius:var(--raio-cartao);overflow:hidden;cursor:pointer;padding:0;text-align:left;transition:transform var(--rapido),border-color var(--rapido),box-shadow var(--rapido)}
@@ -187,7 +187,7 @@ fieldset.bloco legend{font-weight:600;padding:0 6px}
   <!-- INÍCIO -->
   <section class="vista inicio" data-v="inicio">
     <div class="ini">
-      <h2>Modelador</h2><p class="sub">Modelos 3D no estilo Minecraft do Estúdio Problems.</p>
+      <h2>Modelador</h2>
       <div class="ini-acoes">
         <button class="pri" data-ir="banco"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4z"/><path d="M3.5 7.4 12 12l8.5-4.6M12 12v9.2"/><path d="M7.8 9.7v4.6M16.2 9.7v4.6" stroke-opacity=".55"/></svg></span><span><b>Ver o banco</b><small id="iniTot">todos os modelos da equipe</small></span></button>
         <button data-ir="pedir"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19.5 8.5a2.1 2.1 0 0 0-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></svg></span><span><b>Pedir modelo</b><small>descreva e o Claude faz</small></span></button>
