@@ -1,156 +1,171 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="cel">
 <head>
 <meta charset="utf-8">
+<script>/* visual Celeste (2.0): tema escuro ou claro, o mesmo para o Estúdio todo */
+try{document.documentElement.dataset.tema=localStorage.getItem('ep-tema')==='claro'?'claro':'escuro'}catch{document.documentElement.dataset.tema='escuro'}</script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MODELADOR · Estúdio Problems</title>
 <link rel="icon" href="icone.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="icone-180.png"><!-- ícone da aba = o logo do cabeçalho do Modelador (o cubo) -->
 <script>/* o Modelador mora no endereço único do Estúdio Problems (login do Google do menu) */if(location.hostname==='problemsbloxcreate-lab.github.io')location.replace('https://estudio.problemsraiz.workers.dev/modelador/'+location.pathname.replace(/^\/modelador\/?/,'')+location.search+location.hash);</script>
 <script src="/estudio-carregando.js" data-so-progresso></script><!-- porcentagem e o que está carregando -->
 <script src="/estudio-login.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Rubik:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
-/* Modelador (repo problemsbloxcreate-lab/modelador → publicado em site/modelador/ do Estúdio Problems).
-   Mesmo visual do estúdio (tema escuro, Rubik, azul de destaque). */
-:root{--bg:#141518;--panel:#1c1d21;--panel-2:#23252b;--panel-3:#2b2e35;--line:#33363e;--text:#e9ebef;--muted:#9aa0ab;--accent:#3d9bff;--ok:#7bd88f;--warn:#ffcf4a;--err:#ff6b6b;--problems:#19f0f0;
- --f-body:"Rubik",system-ui,-apple-system,"Segoe UI",sans-serif;--f-head:"Lilita One","Rubik",system-ui,sans-serif;--f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;color-scheme:dark}
+/* Modelador no visual Celeste (2.0). Cores, letra, cantos e cabeçalho vêm de /estudio-visual.css (html.cel);
+   aqui ficam só as peças do próprio Modelador, escritas com os tokens (--fundo, --texto, --acento, raios 6/8/12/14).
+   Claro e escuro pelo html[data-tema]. O Blockbench embutido (blockbench/) é de terceiros e não entra aqui. */
+:root{--f-mono:ui-monospace,"Cascadia Mono",Consolas,monospace}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
-body{background:var(--bg);color:var(--text);font:14px/1.45 var(--f-body);display:flex;flex-direction:column;min-height:100vh}
+body{background:var(--fundo);color:var(--texto);font:400 var(--t-corpo)/1.45 var(--fonte);display:flex;flex-direction:column;min-height:100vh}
 button,input,select,textarea{font:inherit;color:inherit}
-a{color:var(--accent)}
+a{color:var(--acento-link)}
 [hidden]{display:none!important}
-.top{display:flex;align-items:center;gap:14px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
-.logo{display:flex;align-items:center;gap:10px;min-width:0}
-.logo b{font:22px/1 var(--f-head);letter-spacing:.3px}
-.logo small{color:var(--muted);font-size:12px;display:block;margin-top:2px}
-.cubo{width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,#5fe7ff 0 50%,#19b8cf 50% 100%);box-shadow:inset 0 -6px 0 rgba(0,0,0,.25);flex:none}
-.cubo.logo-ep{background:none;box-shadow:none;border-radius:0}.cubo.logo-ep svg{width:100%;height:100%;display:block} /* ícone novo (Md; /estudio-icones.js — ADM › Ícones) */
-.abas{display:flex;gap:4px;flex-wrap:wrap}
-.abas button{border:1px solid var(--line);background:none;color:var(--muted);border-radius:999px;padding:5px 13px;font-weight:600;cursor:pointer}
-.abas button:hover{color:var(--text)}
-.abas button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
-.top .esp{flex:1}
-.btn{border:1px solid var(--line);background:var(--panel-2);border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:600;text-decoration:none;color:var(--text);display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
-.btn:hover{border-color:#4a4f5a}
-.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
-.btn.peq{padding:4px 9px;font-size:12.5px}
-.btn[aria-pressed="true"]{background:var(--panel-3);border-color:var(--accent);color:#fff}
-.btn:disabled{opacity:.5;cursor:default}
+.top{flex:none}
+.top .logo{text-align:left;font:inherit}
+.top .logo>span{display:block}
+.cubo{width:28px;height:28px;border-radius:7px;flex:none}
+.cubo.logo-ep{background:none;border-radius:0}.cubo.logo-ep svg{width:100%;height:100%;display:block} /* ícone do programa (/estudio-icones.js — ADM › Ícones) */
+.abas button svg{flex:none}
+#nPed:empty{display:none}
+/* botões */
+.btn{display:inline-flex;align-items:center;gap:var(--e2);height:var(--alt-controle);padding:0 var(--e3);border:0;border-radius:var(--raio-controle);background:var(--fundo-3);color:var(--texto);font:500 var(--t-corpo) var(--fonte);cursor:pointer;text-decoration:none;white-space:nowrap;transition:background var(--rapido),transform var(--rapido),filter var(--rapido)}
+.btn:hover{background:var(--fundo-4)}
+.btn:active{transform:scale(.97)}
+.btn.pri{background:var(--acento);color:var(--acento-texto);font-weight:600}
+.btn.pri:hover{filter:brightness(1.08);background:var(--acento)}
+.btn.peq{height:var(--alt-controle-p);padding:0 10px;border-radius:var(--raio-p);font-size:var(--t-pequeno)}
+.btn svg{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.btn[aria-pressed="true"]{background:var(--acento-suave);color:var(--acento-link);box-shadow:inset 0 0 0 1px var(--acento)}
+.btn:disabled{opacity:.4;cursor:default;transform:none}
+select.btn{max-width:200px}
 main{flex:1;min-height:0;display:flex}
 .vista{flex:1;min-height:0;display:flex}
 /* ---- banco ---- */
-.lista{width:300px;flex:none;border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;background:var(--panel)}
-.lista .busca{padding:10px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--line)}
-.lista input[type=search]{width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
-.chips{display:flex;gap:4px;flex-wrap:wrap}
-.chip{border:1px solid var(--line);background:none;border-radius:999px;padding:2px 9px;font-size:12px;color:var(--muted);cursor:pointer}
-.chip[aria-pressed="true"]{border-color:var(--accent);color:#fff;background:rgba(61,155,255,.18)}
-.itens{overflow:auto;flex:1;padding:6px}
-.item{display:flex;gap:10px;align-items:center;width:100%;text-align:left;border:1px solid transparent;background:none;border-radius:9px;padding:6px;cursor:pointer}
-.item:hover{background:var(--panel-2)}
-.item[aria-current="true"]{background:var(--panel-3);border-color:var(--line)}
-.item canvas,.item .mini{width:52px;height:52px;border-radius:7px;background:var(--panel-2);flex:none;image-rendering:auto}
+.lista{width:300px;flex:none;border-right:1px solid var(--linha);display:flex;flex-direction:column;min-height:0;background:var(--fundo-2)}
+.lista .busca{padding:var(--e3);display:flex;flex-direction:column;gap:var(--e2);border-bottom:1px solid var(--linha)}
+.campo input[type=text],.campo input[type=password],.campo textarea,.campo select,.senha input,.lista input[type=search],.lista input[type=password],.aprova textarea{height:var(--alt-controle);padding:0 var(--e3);background:var(--fundo-2);color:var(--texto);border:1px solid var(--linha-forte);border-radius:var(--raio-controle);width:100%;font:400 var(--t-corpo) var(--fonte)}
+.lista input[type=search]{background:var(--fundo-3);border-color:transparent}
+.campo textarea,.aprova textarea{height:auto;min-height:130px;padding:var(--e2) var(--e3);resize:vertical}
+.aprova textarea{min-height:60px;margin:var(--e2) 0}
+:is(.campo input,.campo textarea,.campo select,.senha input,.lista input,.aprova textarea):focus{outline:none;border-color:var(--acento);box-shadow:0 0 0 3px var(--acento-suave)}
+::placeholder{color:var(--texto-3)}
+.chips{display:flex;gap:var(--e1);flex-wrap:wrap}
+.chip{height:var(--alt-controle-p);border:0;background:var(--fundo-3);border-radius:var(--raio-p);padding:0 10px;font:500 var(--t-legenda) var(--fonte);color:var(--texto-2);cursor:pointer;transition:background var(--rapido),color var(--rapido)}
+.chip:hover{background:var(--fundo-4);color:var(--texto)}
+.chip[aria-pressed="true"]{background:var(--acento-suave);color:var(--acento-link);box-shadow:inset 0 0 0 1px var(--acento)}
+.itens{overflow:auto;flex:1;padding:var(--e2)}
+.item{display:flex;gap:10px;align-items:center;width:100%;text-align:left;border:0;background:none;border-radius:var(--raio-controle);padding:6px;cursor:pointer;transition:background var(--rapido)}
+.item:hover{background:var(--fundo-3)}
+.item[aria-current="true"]{background:var(--acento-suave);box-shadow:inset 0 0 0 1px var(--acento)}
+.item canvas,.item .mini{width:52px;height:52px;border-radius:var(--raio-p);background:var(--fundo-3);flex:none;image-rendering:auto}
 .item .t{min-width:0}
 .item .t b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.item .t span{font-size:12px;color:var(--muted)}
+.item .t span{font-size:var(--t-legenda);color:var(--texto-2)}
 .palco{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
-.barra{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:8px 10px;border-bottom:1px solid var(--line)}
-.barra .sep{width:1px;height:20px;background:var(--line);margin:0 2px}
-.cena3d{flex:1;min-height:280px;position:relative;background:radial-gradient(ellipse at 50% 30%,#2a3140,#15171b 70%)}
+.barra{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:var(--e2) var(--e3);border-bottom:1px solid var(--linha);background:var(--fundo-2)}
+.barra .sep{width:1px;height:20px;background:var(--linha-forte);margin:0 2px}
+.cena3d{flex:1;min-height:280px;position:relative;background:radial-gradient(ellipse at 50% 30%,var(--fundo-4),var(--fundo-3) 75%)}
 .cena3d canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
 .cena3d canvas:active{cursor:grabbing}
-.dica{position:absolute;left:10px;bottom:8px;font-size:11.5px;color:var(--muted);pointer-events:none}
-.vazio{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);text-align:center;padding:20px}
-.info{width:300px;flex:none;border-left:1px solid var(--line);overflow:auto;padding:14px;background:var(--panel)}
-.info h2{font:22px/1.1 var(--f-head);margin:0 0 4px}
-.info .sub{color:var(--muted);font-size:12.5px;margin-bottom:12px}
-.info h3{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:16px 0 6px;font-weight:700}
-.info dl{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;margin:0;font-size:13px}
-.info dt{color:var(--muted)}
-.info dd{margin:0;font-family:var(--f-mono);font-size:12px;overflow-wrap:anywhere}
-.tex{background:repeating-conic-gradient(#2b2e35 0 25%,#202227 0 50%) 0 0/12px 12px;border:1px solid var(--line);border-radius:8px;padding:6px;display:flex;justify-content:center}
+.dica{position:absolute;left:var(--e3);bottom:var(--e2);font-size:var(--t-legenda);color:var(--texto-2);pointer-events:none}
+.vazio{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--texto-2);text-align:center;padding:20px}
+.info{width:300px;flex:none;border-left:1px solid var(--linha);overflow:auto;padding:var(--e4);background:var(--fundo-2)}
+.info h2{font:700 var(--t-titulo)/1.2 var(--fonte);letter-spacing:-.01em;margin:0 0 var(--e1)}
+.info .sub{color:var(--texto-2);font-size:var(--t-pequeno);margin-bottom:var(--e3)}
+.info h3{font-size:var(--t-legenda);text-transform:uppercase;letter-spacing:.06em;color:var(--texto-2);margin:var(--e4) 0 6px;font-weight:600}
+.info dl{display:grid;grid-template-columns:auto 1fr;gap:var(--e1) 10px;margin:0;font-size:var(--t-pequeno)}
+.info dt{color:var(--texto-2)}
+.info dd{margin:0;font-family:var(--f-mono);font-size:var(--t-legenda);overflow-wrap:anywhere}
+.tex{background:repeating-conic-gradient(var(--fundo-4) 0 25%,var(--fundo-3) 0 50%) 0 0/12px 12px;border:1px solid var(--linha);border-radius:var(--raio-controle);padding:6px;display:flex;justify-content:center}
 .tex img{image-rendering:pixelated;max-width:100%;width:256px}
 .baixar{display:flex;flex-direction:column;gap:6px}
 .baixar .btn{justify-content:flex-start}
-.nota{font-size:12px;color:var(--muted)}
+.nota{font-size:var(--t-legenda);color:var(--texto-2)}
 /* ---- pedir ---- */
-.form{max-width:760px;margin:0 auto;padding:22px 18px 40px;width:100%;overflow:auto}
-.form h2{font:26px/1.1 var(--f-head);margin:0 0 6px}
-.form p.lead{color:var(--muted);margin:0 0 18px}
-.campo{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.form{max-width:760px;margin:0 auto;padding:var(--e5) var(--e4) 40px;width:100%;overflow:auto}
+.form h2,.peds h2,.ini h2{font:700 var(--t-tela)/1.15 var(--fonte);letter-spacing:-.01em;margin:0 0 var(--e1)}
+.form p.lead{color:var(--texto-2);margin:0 0 var(--e5)}
+.campo{display:flex;flex-direction:column;gap:6px;margin-bottom:var(--e4)}
 .campo label{font-weight:600}
-.campo small{color:var(--muted);font-size:12px}
-.campo input[type=text],.campo textarea,.campo select,.senha input{background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:9px 11px;width:100%}
-.campo textarea{min-height:130px;resize:vertical}
-.tipos{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
-.tipo{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--panel-2);cursor:pointer;text-align:left}
-.tipo b{display:block}
-.tipo span{font-size:12px;color:var(--muted)}
-.tipo[aria-pressed="true"]{border-color:var(--accent);background:rgba(61,155,255,.14)}
-.tipo i{display:block;font-style:normal;font-size:11.5px;color:var(--muted);margin-top:4px;font-family:var(--f-mono)}
-fieldset.bloco{border:1px solid var(--line);border-radius:12px;padding:12px 14px 4px;margin:0 0 16px}
-fieldset.bloco legend{font-weight:700;padding:0 6px}
+.campo small{color:var(--texto-2);font-size:var(--t-legenda)}
+.tipos{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--e2)}
+.tipo{border:1px solid var(--linha);border-radius:var(--raio-cartao);padding:var(--e3);background:var(--fundo-2);cursor:pointer;text-align:left;transition:border-color var(--rapido),background var(--rapido)}
+.tipo:hover{border-color:var(--linha-forte)}
+.tipo b{display:flex;align-items:center;gap:6px}
+.tipo b svg{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.tipo span{font-size:var(--t-legenda);color:var(--texto-2)}
+.tipo[aria-pressed="true"]{border-color:var(--acento);background:var(--acento-suave);box-shadow:0 0 0 1px var(--acento)}
+.tipo i{display:block;font-style:normal;font-size:var(--t-legenda);color:var(--texto-2);margin-top:var(--e1);font-family:var(--f-mono)}
+fieldset.bloco{border:1px solid var(--linha);border-radius:var(--raio-cartao);padding:var(--e3) var(--e4) var(--e1);margin:0 0 var(--e4)}
+fieldset.bloco legend{font-weight:600;padding:0 6px}
 .marcas{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
-.marcas label{display:flex;gap:7px;align-items:flex-start;border:1px solid var(--line);border-radius:9px;padding:7px 9px;background:var(--panel-2);cursor:pointer;font-size:13px}
-.marcas label small{display:block;color:var(--muted);font-size:11.5px}
-.marcas input{margin-top:2px}
-.marcas.off{opacity:.45;pointer-events:none}
-.chk{display:flex;gap:8px;align-items:flex-start;font-size:13px}
-.etapas{display:flex;gap:8px;overflow-x:auto;padding:8px 0 2px}
+.marcas label{display:flex;gap:7px;align-items:flex-start;border:1px solid var(--linha);border-radius:var(--raio-controle);padding:7px 9px;background:var(--fundo-2);cursor:pointer;font-size:var(--t-pequeno)}
+.marcas label small{display:block;color:var(--texto-2);font-size:var(--t-legenda)}
+.marcas input,.chk input{margin-top:2px;accent-color:var(--acento)}
+.marcas.off{opacity:.4;pointer-events:none}
+.chk{display:flex;gap:var(--e2);align-items:flex-start;font-size:var(--t-pequeno)}
+.etapas{display:flex;gap:var(--e2);overflow-x:auto;padding:var(--e2) 0 2px}
 .etapas figure{margin:0;flex:none;width:260px}
-.etapas img{width:260px;height:auto;border-radius:8px;border:1px solid var(--line);background:#16181c;display:block;cursor:zoom-in}
-.etapas figcaption{font-size:11.5px;color:var(--muted);margin-top:3px}
-.aprova{margin-top:10px;border:1px solid var(--warn);border-radius:10px;padding:10px 12px;background:rgba(255,207,74,.07)}
-.aprova textarea{width:100%;min-height:60px;margin:8px 0;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:8px}
-.st.silhueta{background:rgba(255,207,74,.22);color:var(--warn)}.st.aprovado{background:rgba(61,155,255,.18);color:#8cc4ff}
-.refs{border:1.5px dashed var(--line);border-radius:10px;padding:14px;text-align:center;color:var(--muted);cursor:pointer}
-.refs.sobre{border-color:var(--accent);color:var(--text)}
-.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.etapas img{width:260px;height:auto;border-radius:var(--raio-controle);border:1px solid var(--linha);background:var(--fundo-3);display:block;cursor:zoom-in}
+.etapas figcaption{font-size:var(--t-legenda);color:var(--texto-2);margin-top:3px}
+.aprova{margin-top:10px;border:1px solid var(--aviso);border-radius:var(--raio-cartao);padding:var(--e3) var(--e4);background:color-mix(in srgb,var(--aviso) 8%,transparent)}
+.refs{border:1.5px dashed var(--linha-forte);border-radius:var(--raio-cartao);padding:var(--e4);text-align:center;color:var(--texto-2);cursor:pointer;transition:border-color var(--rapido),background var(--rapido)}
+.refs:hover{background:var(--fundo-2)}
+.refs.sobre{border-color:var(--acento);background:var(--acento-suave);color:var(--texto)}
+.thumbs{display:flex;gap:var(--e2);flex-wrap:wrap;margin-top:var(--e2)}
 .thumbs figure{margin:0;position:relative}
-.thumbs img{width:86px;height:86px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
-.thumbs button{position:absolute;top:-6px;right:-6px;border:0;border-radius:50%;width:22px;height:22px;background:var(--err);color:#fff;cursor:pointer;line-height:22px;padding:0}
-.senha{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:16px}
+.thumbs img{width:86px;height:86px;object-fit:cover;border-radius:var(--raio-controle);border:1px solid var(--linha)}
+.thumbs button{position:absolute;top:-6px;right:-6px;border:0;border-radius:var(--raio-p);width:22px;height:22px;background:var(--perigo);color:#fff;cursor:pointer;line-height:22px;padding:0}
+.senha{display:flex;gap:var(--e2);align-items:center;flex-wrap:wrap;background:var(--fundo-2);border:1px solid var(--linha);border-radius:var(--raio-cartao);padding:var(--e3) var(--e4);margin-bottom:var(--e4)}
+.senha>span{display:inline-flex;align-items:center;gap:6px}
 .senha input{width:auto;flex:1;min-width:160px}
-.msg{margin-top:10px;font-size:13px}
-.msg.ok{color:var(--ok)}.msg.err{color:var(--err)}
+.ic-l{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px}
+.msg{margin-top:10px;font-size:var(--t-pequeno)}
+.msg.ok{color:var(--sucesso)}.msg.err{color:var(--perigo)}
 /* ---- pedidos ---- */
-.peds{max-width:820px;margin:0 auto;padding:22px 18px 40px;width:100%;overflow:auto}
-.ped{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--panel);margin-bottom:10px}
+.peds{max-width:820px;margin:0 auto;padding:var(--e5) var(--e4) 40px;width:100%;overflow:auto}
+.peds .topo-ped{display:flex;align-items:center;gap:10px;margin-bottom:var(--e4);flex-wrap:wrap}
+.peds .topo-ped h2{margin:0;flex:1}
+.ped{border:1px solid var(--linha);border-radius:var(--raio-cartao);padding:var(--e4);background:var(--fundo-2);margin-bottom:10px;transition:border-color var(--rapido)}
+.ped:hover{border-color:var(--linha-forte)}
 .ped .cab{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.ped .cab b{font-size:15px}
-.st{font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 9px;text-transform:uppercase;letter-spacing:.4px}
-.st.aberto{background:#33363e;color:#d6d9df}.st.fazendo{background:rgba(255,207,74,.18);color:var(--warn)}.st.feito{background:rgba(123,216,143,.16);color:var(--ok)}.st.erro{background:rgba(255,107,107,.16);color:var(--err)}
-.ped .desc{color:var(--muted);font-size:13px;margin:6px 0 0;white-space:pre-wrap}
-.ped .resp{margin-top:8px;font-size:13px;white-space:pre-wrap}
-.ped .acoes{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
-/* tela inicial (como a do Animador): atalhos + abertos recentemente */
+.ped .cab b{font-size:var(--t-destaque)}
+.st{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 var(--e2);border-radius:var(--raio-p);background:var(--fundo-3);font-size:var(--t-legenda);font-weight:500;color:var(--texto)}
+.st::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--neutro)}
+.st.fazendo::before,.st.silhueta::before{background:var(--aviso)}.st.feito::before{background:var(--sucesso)}.st.erro::before{background:var(--perigo)}.st.aprovado::before{background:var(--acento)}
+.ped .desc{color:var(--texto-2);font-size:var(--t-pequeno);margin:6px 0 0;white-space:pre-wrap}
+.ped .resp{margin-top:var(--e2);font-size:var(--t-pequeno);white-space:pre-wrap}
+.ped .acoes{margin-top:var(--e2);display:flex;gap:6px;flex-wrap:wrap}
+/* tela inicial: atalhos + abertos recentemente */
 .vista.inicio{overflow:auto;display:block}
-.ini{max-width:1100px;margin:0 auto;padding:22px 18px 50px}
-.ini h2{font:26px/1.1 var(--f-head);margin:0 0 4px;letter-spacing:.3px}.ini .sub{color:var(--muted);margin:0 0 20px}
-.ini-acoes{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin-bottom:28px}
-.ini-acoes button,.ini-acoes a{display:flex;align-items:center;gap:14px;text-align:left;padding:16px 18px;border-radius:14px;border:1px solid var(--line);background:var(--panel);cursor:pointer;color:var(--text);text-decoration:none}
-.ini-acoes :is(button,a):hover{border-color:var(--accent);background:var(--panel-2)}
-.ini-acoes .pri{background:linear-gradient(140deg,color-mix(in srgb,var(--accent) 26%,var(--panel)),var(--panel) 70%);border-color:color-mix(in srgb,var(--accent) 50%,var(--line))}
-.ini-acoes .ic{width:46px;height:46px;flex:none;border-radius:13px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,rgba(61,155,255,.28),rgba(25,211,240,.14));border:1px solid rgba(61,155,255,.45)}.ini-acoes .ic svg{width:24px;height:24px}.ini-acoes :is(button,a):hover .ic{background:linear-gradient(135deg,var(--accent),#19d3f0);border-color:transparent}
-.abas button svg,.top .btn svg{width:15px;height:15px;vertical-align:-3px;margin-right:5px}.ini-acoes b{display:block;font-size:15px}.ini-acoes small{color:var(--muted);font-size:12px}
-.ini-sec{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-size:12.5px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600}
+.ini{max-width:1100px;margin:0 auto;padding:var(--e5) var(--e4) 50px}
+.ini .sub{color:var(--texto-2);margin:0 0 var(--e5)}
+.ini-acoes{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:var(--e3);margin-bottom:var(--e6)}
+.ini-acoes button,.ini-acoes a{display:flex;align-items:center;gap:var(--e3);text-align:left;padding:var(--e4);border-radius:var(--raio-cartao);border:1px solid var(--linha);background:var(--fundo-2);cursor:pointer;color:var(--texto);text-decoration:none;transition:border-color var(--rapido),box-shadow var(--rapido),transform var(--rapido)}
+.ini-acoes :is(button,a):hover{border-color:var(--linha-forte);box-shadow:var(--sombra-2);transform:translateY(-1px)}
+.ini-acoes .pri{border-color:var(--acento)}
+.ini-acoes .ic{width:40px;height:40px;flex:none;border-radius:10px;display:grid;place-items:center;color:var(--acento-link);background:var(--acento-suave)}
+.ini-acoes .ic svg{width:20px;height:20px}
+.ini-acoes b{display:block;font-size:var(--t-destaque);font-weight:600}
+.ini-acoes small{color:var(--texto-2);font-size:var(--t-legenda)}
+.ini-sec{display:flex;align-items:center;gap:10px;margin:0 0 var(--e3);font-size:var(--t-legenda);text-transform:uppercase;letter-spacing:.06em;color:var(--texto-2);font-weight:600}
 .ini-sec .esp{flex:1}.ini-sec button{text-transform:none;letter-spacing:0}
-.ini-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-.ini-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;padding:0;text-align:left;transition:transform .15s,border-color .15s}
-.ini-card:hover,.ini-card:focus-visible{border-color:var(--accent);transform:translateY(-2px);outline:none}
-.ini-card canvas{display:block;width:100%;aspect-ratio:1;background:radial-gradient(circle at 50% 40%,var(--panel-3),var(--panel-2))}
-.ini-card .t{display:block;padding:8px 10px}.ini-card b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}.ini-card small{color:var(--muted);font-size:11.5px}
-.ini-vazio{padding:26px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px;grid-column:1/-1}
-.logo{cursor:pointer}
-@media (max-width:980px){.info{display:none}.info.aberta{display:block;position:fixed;inset:auto 0 0 0;max-height:55vh;border-left:0;border-top:1px solid var(--line);z-index:5}}
-@media (max-width:720px){.vista.banco{flex-direction:column}.lista{width:auto;max-height:38vh;border-right:0;border-bottom:1px solid var(--line)}.top{gap:8px}}
+.ini-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--e3)}
+.ini-card{background:var(--fundo-2);border:1px solid var(--linha);border-radius:var(--raio-cartao);overflow:hidden;cursor:pointer;padding:0;text-align:left;transition:transform var(--rapido),border-color var(--rapido),box-shadow var(--rapido)}
+.ini-card:hover,.ini-card:focus-visible{border-color:var(--linha-forte);box-shadow:var(--sombra-2);transform:translateY(-1px)}
+.ini-card canvas{display:block;width:100%;aspect-ratio:1;background:radial-gradient(circle at 50% 40%,var(--fundo-4),var(--fundo-3))}
+.ini-card .t{display:block;padding:var(--e2) 10px}.ini-card b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:var(--t-pequeno);font-weight:600}.ini-card small{color:var(--texto-2);font-size:var(--t-legenda)}
+.ini-vazio{padding:var(--e5);text-align:center;color:var(--texto-2);border:1px dashed var(--linha-forte);border-radius:var(--raio-cartao);grid-column:1/-1}
+@media (max-width:980px){.info{display:none}.info.aberta{display:block;position:fixed;inset:auto 0 0 0;max-height:55vh;border-left:0;border-top:1px solid var(--linha);z-index:5;box-shadow:var(--sombra-3)}}
+@media (max-width:720px){.vista.banco{flex-direction:column}.lista{width:auto;max-height:38vh;border-right:0;border-bottom:1px solid var(--linha)}.top{gap:var(--e2)}}
 </style>
+<link rel="preload" href="/estudio-inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/estudio-visual.css">
 </head>
 <body>
 <header class="top">
-  <div class="logo"><div class="cubo logo-ep" aria-hidden="true" data-estudio-icone="md"></div><div><b>MODELADOR</b><small>Estúdio Problems · modelos 3D no estilo Minecraft</small></div></div>
+  <button class="logo" type="button" title="Voltar ao início do Modelador"><span class="cubo logo-ep ic-prog" aria-hidden="true" data-estudio-icone="md"></span><span><b>MODELADOR</b><small>Estúdio Problems</small></span></button>
   <nav class="abas" role="tablist" aria-label="Áreas do Modelador">
     <button role="tab" data-v="inicio" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10.5 9-7 9 7V20a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H4.5A1.5 1.5 0 0 1 3 20z"/></svg>Início</button>
     <button role="tab" data-v="banco" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4z"/><path d="M3.5 7.4 12 12l8.5-4.6M12 12v9.2"/><path d="M7.8 9.7v4.6M16.2 9.7v4.6" stroke-opacity=".55"/></svg>Banco</button>
@@ -158,9 +173,16 @@ fieldset.bloco legend{font-weight:700;padding:0 6px}
     <button role="tab" data-v="pedidos" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17.5" rx="2"/><path d="M9 2.5h6v3H9zM8.5 11h7M8.5 14.5h7M8.5 18h4"/></svg>Pedidos <span id="nPed"></span></button>
   </nav>
   <div class="esp"></div>
-  <a class="btn peq" href="blockbench/" target="_blank" rel="noopener" title="Blockbench: editor completo de modelos, texturas e animações (abre numa aba nova)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12.5" width="8" height="8" rx="1.2"/><rect x="13" y="12.5" width="8" height="8" rx="1.2"/><rect x="8" y="3.5" width="8" height="8" rx="1.2"/></svg>Blockbench</a>
+  <button class="tema-bt" data-tema-bt type="button"></button>
   <span data-estudio-conta></span>
 </header>
+<script>(() => { const b = document.querySelector('[data-tema-bt]'), H = document.documentElement;
+  const SOL = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+  const LUA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>';
+  const pinta = () => { const esc = H.dataset.tema !== 'claro'; b.innerHTML = esc ? SOL : LUA; b.title = esc ? 'Usar o tema claro' : 'Usar o tema escuro'; b.setAttribute('aria-label', b.title); };
+  b.onclick = () => { H.dataset.tema = H.dataset.tema === 'claro' ? 'escuro' : 'claro'; try { localStorage.setItem('ep-tema', H.dataset.tema); } catch { } pinta(); };
+  addEventListener('storage', e => { if (e.key === 'ep-tema') { H.dataset.tema = e.newValue === 'claro' ? 'claro' : 'escuro'; pinta(); } });
+  pinta(); })();</script>
 <main>
   <!-- INÍCIO -->
   <section class="vista inicio" data-v="inicio">
@@ -217,7 +239,7 @@ fieldset.bloco legend{font-weight:700;padding:0 6px}
       <h2>Pedir um modelo novo</h2>
       <p class="lead">Descreva o que você quer e mande uma imagem de referência. O robô (Claude) cria o modelo no estilo do Minecraft, confere por fotos de vários ângulos e coloca no banco. Leva uns minutos e usa o limite do Claude da equipe.</p>
       <div class="senha" id="boxSenha" hidden>
-        <span>🔒 Senha da equipe (a mesma da biblioteca de sons):</span>
+        <span><svg class="ic-l" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9.5" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg> Senha da equipe (a mesma da biblioteca de sons):</span>
         <input type="password" id="senha" placeholder="senha da equipe" autocomplete="current-password">
         <button type="button" class="btn peq" id="okSenha">Entrar</button>
       </div>
@@ -229,10 +251,10 @@ fieldset.bloco legend{font-weight:700;padding:0 6px}
       <div class="campo"><label for="pNome">Nome do modelo</label><input type="text" id="pNome" maxlength="60" required placeholder="Ex.: Trono do Kadu, Golem de lava, Skate do Problems"></div>
       <div class="campo"><label>O que é</label>
         <div class="tipos" id="tipos">
-          <button type="button" class="tipo" data-t="personagem" aria-pressed="true"><b>🧍 Personagem</b><span>Tem cabeça, braços e pernas; o estúdio anima.</span></button>
-          <button type="button" class="tipo" data-t="objeto" aria-pressed="false"><b>🪑 Objeto / cenário</b><span>Fica no chão ou no mundo (trono, máquina, baú).</span></button>
-          <button type="button" class="tipo" data-t="mao" aria-pressed="false"><b>✋ Item de mão</b><span>Segurado pelo personagem (arma, livro, ferramenta).</span></button>
-          <button type="button" class="tipo" data-t="bloco" aria-pressed="false"><b>🟫 Bloco</b><span>Um bloco de 16×16×16 com textura nova.</span></button>
+          <button type="button" class="tipo" data-t="personagem" aria-pressed="true"><b><svg class="ic-l" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.5" r="3.5"/><path d="M5 20.5a7 7 0 0 1 14 0"/></svg>Personagem</b><span>Tem cabeça, braços e pernas; o estúdio anima.</span></button>
+          <button type="button" class="tipo" data-t="objeto" aria-pressed="false"><b><svg class="ic-l" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20v-9a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v9M3 20h18M7.5 14h9"/></svg>Objeto / cenário</b><span>Fica no chão ou no mundo (trono, máquina, baú).</span></button>
+          <button type="button" class="tipo" data-t="mao" aria-pressed="false"><b><svg class="ic-l" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 13V6.5a1.5 1.5 0 0 1 3 0V12M11 11V4.5a1.5 1.5 0 0 1 3 0V12M14 11V6.5a1.5 1.5 0 0 1 3 0V14a6 6 0 0 1-6 6h-.5a6 6 0 0 1-5-2.7L3.5 14.5a1.5 1.5 0 0 1 2.5-1.6L8 15"/></svg>Item de mão</b><span>Segurado pelo personagem (arma, livro, ferramenta).</span></button>
+          <button type="button" class="tipo" data-t="bloco" aria-pressed="false"><b><svg class="ic-l" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M4 9.5h16"/></svg>Bloco</b><span>Um bloco de 16×16×16 com textura nova.</span></button>
         </div>
       </div>
       <div class="campo"><label>Complexidade do modelo</label>
@@ -273,8 +295,8 @@ fieldset.bloco legend{font-weight:700;padding:0 6px}
   <!-- PEDIDOS -->
   <section class="vista" data-v="pedidos" hidden>
     <div class="peds">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
-        <h2 style="font:26px/1.1 var(--f-head);margin:0;flex:1">Pedidos de modelos</h2>
+      <div class="topo-ped">
+        <h2>Pedidos de modelos</h2>
         <button class="btn peq" id="atuPed">Atualizar</button>
       </div>
       <div id="listaPed"><p class="nota">Carregando…</p></div>
@@ -286,6 +308,7 @@ fieldset.bloco legend{font-weight:700;padding:0 6px}
 <script>
 "use strict";
 /* ===================== dados ===================== */
+const ICONE_BAIXA='<svg class="" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.5 11 12 15.5l4.5-4.5M5 20h14"/></svg>';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const DADOS=new URL('../dados/',location.href).href;
 /* No site novo (problemsbloxcreate-lab.github.io/modelador/) não existe a pasta dados/: o banco é PRIVADO e vem pelo servidor
@@ -294,14 +317,13 @@ const DADOS=new URL('../dados/',location.href).href;
 const PORTEIRO=location.hostname==='estudio.problemsraiz.workers.dev';
 const REMOTO=PORTEIRO||(!/(^|\.)workers\.dev$/.test(location.hostname)&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname));
 const SERVIDOR_EQUIPE=PORTEIRO?location.origin+'/nuvem':'https://sons-problems.problemsbloxcreate.workers.dev';
-if(REMOTO){const v=document.getElementById('voltaInicio');if(v){v.href='/';v.title='Voltar para o menu do Estúdio Problems';v.textContent='← Menu';}}
 let FRESCO=false;
 async function dados(p,tipo){
   const r=REMOTO?await fetch(SERVIDOR_EQUIPE+'/modelos/dados?p='+encodeURIComponent(p)+(FRESCO?'&novo=1':''),{headers:{'x-senha':senhaEq()},cache:'no-store'}):await fetch(DADOS+p,{cache:'no-store'});
   if(r.status===401){try{localStorage.removeItem('estudio.senhaSons');}catch(e){}pedeSenhaBanco('Senha da equipe errada. Digite de novo.');throw new Error('senha');}
   if(!r.ok)throw new Error(r.status);return tipo==='blob'?r.blob():tipo==='texto'?r.text():r.json();}
 const senhaEq=()=>{try{return localStorage.getItem('estudio.senhaSons')||'';}catch(e){return '';}};
-function pedeSenhaBanco(msg){const box=$('#itens');box.innerHTML=`<form class="busca" id="fSenhaB" style="border:0"><p class="nota" style="margin:0">${msg||'Os modelos da equipe são privados. Digite a senha da equipe (a mesma da biblioteca de sons):'}</p><input type="password" id="senhaB" placeholder="senha da equipe" autocomplete="current-password" style="background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px"><button class="btn pri" type="submit">Abrir o banco</button></form>`;
+function pedeSenhaBanco(msg){const box=$('#itens');box.innerHTML=`<form class="busca" id="fSenhaB" style="border:0"><p class="nota" style="margin:0">${msg||'Os modelos da equipe são privados. Digite a senha da equipe (a mesma da biblioteca de sons):'}</p><input type="password" id="senhaB" placeholder="senha da equipe" autocomplete="current-password"><button class="btn pri" type="submit">Abrir o banco</button></form>`;
   $('#fSenhaB').onsubmit=e=>{e.preventDefault();const v=$('#senhaB').value.trim();if(!v)return;try{localStorage.setItem('estudio.senhaSons',v);}catch(_){}mostraSenha&&mostraSenha();carregaBanco();};}
 const PACKS={brainrots:'Brainrots',turma:'Turma',brasil:'Brasil',bebes:'Bebês',fogueiras:'Fogueiras',outros:'Outros',drplaneta:'Dr. Planeta',meowl:'Meowl',estudio:'Feitos no Modelador',livres:'Livres (licença aberta)'};
 const nomePack=p=>PACKS[p]||p;
@@ -435,22 +457,22 @@ async function mostraInfo(d,tex){const m=d.modeloObj,gs=Object.keys(m.groups||{}
   <dt>partes</dt><dd>${ossos.length?ossos.map(k=>OSSOS[k]).join(', '):'nenhuma parte do boneco'}</dd><dt>animações</dt><dd>${(d.animacoes||[]).length?d.animacoes.map(a=>esc(a.nome)).join(', '):'nenhuma'}</dd></dl>
   <h3>Textura</h3><div class="tex">${tex?`<img alt="Textura ${esc(V.tex)}" src="${tex.userData.src}">`:'<span class="nota">sem textura</span>'}</div>
   <h3>Baixar</h3><div class="baixar" id="baixar">
-   <button class="btn peq" data-b="json">📦 Modelo do estúdio (.json)</button>
-   <button class="btn peq" data-b="bbs">🎮 Para o jogo (BBS: model.bbs.json)</button>
-   <button class="btn peq" data-b="png">🖼 Textura (model.png)</button>
+   <button class="btn peq" data-b="json"><svg class="" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.5 11 12 15.5l4.5-4.5M5 20h14"/></svg>Modelo do estúdio (.json)</button>
+   <button class="btn peq" data-b="bbs"><svg class="" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.5 11 12 15.5l4.5-4.5M5 20h14"/></svg>Para o jogo (BBS: model.bbs.json)</button>
+   <button class="btn peq" data-b="png"><svg class="" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.5 11 12 15.5l4.5-4.5M5 20h14"/></svg>Textura (model.png)</button>
   </div>
   <p class="nota" id="notaBB"></p>
   <h3>Conferência</h3><div id="folha"><p class="nota">Procurando a folha de fotos…</p></div>
-  <h3>Mudar</h3><div class="baixar"><a class="btn peq pri" href="blockbench/?banco=${encodeURIComponent(d.id||it.id)}" target="_blank" rel="noopener">🧱 Editar no Blockbench</a><button class="btn peq" id="ajusta">✏️ Pedir ajuste ao robô</button></div>
-  <p class="nota">No Blockbench, use o menu 🧊 Banco do Estúdio → Salvar no banco: em uns 3 minutos a versão nova aparece aqui.</p>
+  <h3>Mudar</h3><div class="baixar"><a class="btn peq pri" href="blockbench/?banco=${encodeURIComponent(d.id||it.id)}" target="_blank" rel="noopener"><svg class="" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="12.5" width="8" height="8" rx="1.2"/><rect x="13" y="12.5" width="8" height="8" rx="1.2"/><rect x="8" y="3.5" width="8" height="8" rx="1.2"/></svg>Editar no Blockbench</a><button class="btn peq" id="ajusta"><svg class="" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19.5 8.5a2.1 2.1 0 0 0-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></svg>Pedir ajuste ao robô</button></div>
+  <p class="nota">No Blockbench, use o menu Banco do Estúdio › Salvar no banco: em uns 3 minutos a versão nova aparece aqui.</p>
   ${(d.pack==='livres')?'<p class="nota" style="margin-top:10px">Modelo de licença aberta: veja autor e obrigação de crédito em <a href="#" id="verCreditos">CREDITOS.md</a>.</p>':''}`;
  $$('#baixar [data-b]').forEach(b=>b.onclick=()=>baixa(d,b.dataset.b));
  $('#ajusta').onclick=()=>{PED.base={id:d.id,nome:d.nome||d.id};mostraBase();$('#pNome').value=d.nome||d.id;vai('pedir');$('#pDesc').focus();};
  const vc=$('#verCreditos');if(vc)vc.onclick=async e=>{e.preventDefault();const b=await arquivo('modelos/CREDITOS.md');if(b)window.open(URL.createObjectURL(new Blob([await b.text()],{type:'text/plain;charset=utf-8'})),'_blank');};
  const id=d.id||it.id,bbB=await arquivo('modelos-export/'+id+'.bbmodel'),foB=await arquivo('modelos-fotos/'+id+'.png');if(B.sel!==id)return;
- if(bbB){const a=document.createElement('a');a.className='btn peq';a.href=URL.createObjectURL(bbB);a.download=id+'.bbmodel';a.textContent='🧱 Para o Blockbench (.bbmodel)';$('#baixar').appendChild(a);}
+ if(bbB){const a=document.createElement('a');a.className='btn peq';a.href=URL.createObjectURL(bbB);a.download=id+'.bbmodel';a.innerHTML=ICONE_BAIXA+'Para o Blockbench (.bbmodel)';$('#baixar').appendChild(a);}
  else $('#notaBB').textContent='O arquivo do Blockbench (.bbmodel) sai junto quando o robô cria o modelo.';
- const fo=foB&&URL.createObjectURL(foB);$('#folha').innerHTML=fo?`<a href="${fo}" target="_blank" rel="noopener"><img src="${fo}" alt="Folha de conferência" style="width:100%;border-radius:8px;border:1px solid var(--line)"></a>`:'<p class="nota">Sem folha de fotos (modelo antigo). Os modelos novos do robô vêm com fotos de 8 ângulos.</p>';
+ const fo=foB&&URL.createObjectURL(foB);$('#folha').innerHTML=fo?`<a href="${fo}" target="_blank" rel="noopener"><img src="${fo}" alt="Folha de conferência" style="width:100%;border-radius:var(--raio-controle);border:1px solid var(--linha)"></a>`:'<p class="nota">Sem folha de fotos (modelo antigo). Os modelos novos do robô vêm com fotos de 8 ângulos.</p>';
  $('#tInfo').hidden=false;}
 $('#tInfo').onclick=()=>$('#info').classList.toggle('aberta');
 function salva(nome,blob){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nome;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000);}
@@ -521,7 +543,7 @@ $('#fPed').addEventListener('submit',async e=>{e.preventDefault();const msg=$('#
  try{const r=await eq('/modelo/pedido',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(corpo)});
   for(let i=0;i<PED.refs.length;i++){msg.textContent='Mandando a referência '+(i+1)+' de '+PED.refs.length+'…';await eq('/modelo/ref?id='+encodeURIComponent(r.id)+'&n='+i,{method:'PUT',headers:{'content-type':'image/jpeg'},body:PED.refs[i].blob});}
   const f=await eq('/modelo/pedido?id='+encodeURIComponent(r.id),{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({status:'aberto'})});
-  msg.className='msg ok';msg.textContent=f.disparado?'Pedido enviado! O robô já começou. Acompanhe em 📋 Pedidos.':'Pedido salvo, mas não consegui chamar o robô agora ('+(f.claude||'sem resposta')+'). Ele fica na fila em 📋 Pedidos.';
+  msg.className='msg ok';msg.textContent=f.disparado?'Pedido enviado! O robô já começou. Acompanhe na aba Pedidos.':'Pedido salvo, mas não consegui chamar o robô agora ('+(f.claude||'sem resposta')+'). Ele fica na fila na aba Pedidos.';
   $('#fPed').reset();PED.refs.forEach(x=>URL.revokeObjectURL(x.url));PED.refs=[];desenhaRefs();PED.base=null;mostraBase();try{$('#pPor').value=localStorage.getItem('modelador.por')||'';}catch(_){}
   setTimeout(()=>vai('pedidos'),900);}
  catch(err){msg.className='msg err';msg.textContent=err.message;}finally{bt.disabled=false;}});
@@ -538,14 +560,14 @@ async function decide(id,status,comentario){try{const r=await eq('/modelo/pedido
  if(!r.disparado)alert('Salvei, mas não consegui chamar o robô agora ('+(r.claude||'sem resposta')+').');}catch(e){alert(e.message);}carregaPedidos();}
 async function carregaPedidos(){const box=$('#listaPed');clearTimeout(PED.timer);
  if(!EQ.url){box.innerHTML='<p class="nota">O servidor da equipe não está ligado neste site.</p>';return;}
- if(!senha()){box.innerHTML='<p class="nota">Digite a senha da equipe na aba ✏️ Pedir modelo para ver os pedidos.</p>';return;}
+ if(!senha()){box.innerHTML='<p class="nota">Digite a senha da equipe na aba Pedir modelo para ver os pedidos.</p>';return;}
  try{const j=await eq('/modelos/pedidos');PED.lista=(j.pedidos||[]).filter(p=>p.status!=='rascunho').sort((a,b)=>(b.criadoEm||0)-(a.criadoEm||0));}
  catch(e){box.innerHTML=`<p class="msg err">${esc(e.message)}</p>`;return;}
  const andando=PED.lista.filter(p=>['aberto','fazendo','aprovado'].includes(p.status)).length;$('#nPed').textContent=andando?'('+andando+')':'';
  box.innerHTML=PED.lista.length?PED.lista.map(p=>`<article class="ped"><div class="cab"><b>${esc(p.nome)}</b><span class="st ${esc(p.status)}">${esc(stTxt[p.status]||p.status)}</span><span class="nota">${esc(p.tipo==='mao'?'item de mão':p.tipo)} · ${esc(NIVEL_TXT[p.nivel]||'Médio')} · ${esc(ANIV_TXT[p.anim_nivel]||'')}${(p.anims||[]).length?' ('+p.anims.map(nomeAnim).join(', ')+')':''} · ${esc(nomePack(p.pack||'estudio'))}${p.base?' · ajuste de '+esc(p.base):''} · ${esc(p.por||'')} ${quando(p.criadoEm)}</span></div>
-   <p class="desc">${esc(p.descricao)}</p><div class="etapas" data-id="${esc(p.id)}" hidden></div>${p.etapa&&(p.status==='fazendo'||p.status==='aprovado')?`<p class="resp">⏳ ${esc(p.etapa)}</p>`:''}${p.resposta?`<p class="resp">${esc(p.resposta)}</p>`:''}
+   <p class="desc">${esc(p.descricao)}</p><div class="etapas" data-id="${esc(p.id)}" hidden></div>${p.etapa&&(p.status==='fazendo'||p.status==='aprovado')?`<p class="resp"><svg class="" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> ${esc(p.etapa)}</p>`:''}${p.resposta?`<p class="resp">${esc(p.resposta)}</p>`:''}
    ${p.status==='silhueta'?`<div class="aprova"><b>A silhueta está pronta.</b> Confira as fotos acima. Aprovando, o robô detalha, pinta e anima. Se algo estiver errado (tamanho, proporção, partes), escreva o que mudar e peça para refazer.<textarea data-com="${esc(p.id)}" placeholder="O que mudar (só para refazer)"></textarea><div class="acoes"><button class="btn peq pri" data-ok="${esc(p.id)}">Aprovar e continuar</button><button class="btn peq" data-refaz="${esc(p.id)}">Refazer a silhueta</button></div></div>`:''}
-   <div class="acoes">${p.modelo?`<button class="btn peq" data-ver="${esc(p.modelo)}">🧊 Ver no banco</button>`:''}${p.run?`<a class="btn peq" href="${esc(p.run)}" target="_blank" rel="noopener">Ver o robô trabalhando</a>`:''}</div></article>`).join(''):'<p class="nota">Nenhum pedido ainda.</p>';
+   <div class="acoes">${p.modelo?`<button class="btn peq" data-ver="${esc(p.modelo)}"><svg class="" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4z"/><path d="M3.5 7.4 12 12l8.5-4.6M12 12v9.2"/></svg>Ver no banco</button>`:''}${p.run?`<a class="btn peq" href="${esc(p.run)}" target="_blank" rel="noopener">Ver o robô trabalhando</a>`:''}</div></article>`).join(''):'<p class="nota">Nenhum pedido ainda.</p>';
  $$('[data-ver]').forEach(b=>b.onclick=async()=>{await recarregaBanco();vai('banco');abre(b.dataset.ver);});
  $$('[data-ok]').forEach(b=>b.onclick=()=>{b.disabled=true;decide(b.dataset.ok,'aprovado');});
  $$('[data-refaz]').forEach(b=>b.onclick=()=>{const c=(document.querySelector(`[data-com="${b.dataset.refaz}"]`)||{}).value||'';if(!c.trim()){alert('Escreva o que mudar na silhueta.');return;}b.disabled=true;decide(b.dataset.refaz,'refazer',c.trim());});
